@@ -11,3 +11,4 @@ test-results/
 *.keystore
 playwright-report/
 screenshots/
+release/

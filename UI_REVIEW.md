@@ -28,7 +28,7 @@ No game families, variants, rule engines or research text were changed.
 
 ## Delivery
 
-Changes are on `fix/mobile-usability-2026-10-11` in [draft PR #1](https://github.com/ARHeritiana/Kilalao/pull/1). Automatic approval review rejected directly updating main because this request did not explicitly authorize a direct push to that branch. Main remains at its starting commit.
+These changes were merged into `main` through [PR #1](https://github.com/ARHeritiana/Kilalao/pull/1), merge commit `7c83c057e9285be7165249056b90ed11641ced17`. This review records the historical 1.1.1 validation; see [UPDATES.md](UPDATES.md) for the subsequent updater.
 
 The tested APK is bundled as `APK/Kilalao-1.1.1-debug.apk`, with its checksum in `APK/SHA256SUMS`. Every bundled asset matches the reviewed source byte for byte. APK SHA-256: `d86073c8be12a85823fab9503ce827435ce9e45e87f312b6669c5a1c0e3e450e`.
 

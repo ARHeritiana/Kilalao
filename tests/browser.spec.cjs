@@ -74,3 +74,12 @@ test('Save phone screenshots for visual review',async({page})=>{
   await page.goto('/#'+hash);await page.waitForTimeout(100);await page.screenshot({path:'screenshots/'+name+'.png',fullPage:false});
  }
 });
+
+test('Updates remains reachable on a small phone and preserves the current game',async({page})=>{
+ await page.setViewportSize({width:320,height:568});await page.goto('/#game/hanoi');
+ await page.locator('[data-peg="0"]').click();await page.locator('[data-peg="1"]').click();
+ const update=page.locator('#game-updates');await expect(update).toBeInViewport();
+ const box=await update.boundingBox();expect(box.height).toBeGreaterThanOrEqual(48);
+ await update.click();await expect(page.locator('#toast')).toContainText('Android app');
+ await expect(page.locator('.game-status')).toContainText('1 move');
+});

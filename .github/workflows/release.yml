@@ -1,0 +1,57 @@
+name: Publish Android update
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require the persistent signing key
+        env:
+          KEYSTORE: ${{ secrets.KILALAO_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.KILALAO_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KILALAO_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KILALAO_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE" && test -n "$STORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD" || { echo 'Set all four KILALAO signing secrets before publishing. Never use a temporary debug certificate for updates.'; exit 1; }
+          printf '%s' "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/kilalao-release.jks"
+          chmod 600 "$RUNNER_TEMP/kilalao-release.jks"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci && npm test && npm run check
+      - run: npx playwright install --with-deps chromium && npm run test:browser
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build, test and lint with the permanent certificate
+        env:
+          KILALAO_KEYSTORE_PATH: ${{ runner.temp }}/kilalao-release.jks
+          KILALAO_STORE_PASSWORD: ${{ secrets.KILALAO_STORE_PASSWORD }}
+          KILALAO_KEY_ALIAS: ${{ secrets.KILALAO_KEY_ALIAS }}
+          KILALAO_KEY_PASSWORD: ${{ secrets.KILALAO_KEY_PASSWORD }}
+        run: bash ./gradlew --no-daemon testDebugUnitTest assembleRelease lintRelease
+      - name: Verify the signed APK and prepare update metadata
+        run: python3 scripts/prepare-release.py
+      - name: Publish the tested update from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          gh release create "v$version" "release/Kilalao-$version.apk" release/update.json release/SHA256SUMS --target "$GITHUB_SHA" --title "Kilalao $version" --generate-notes
+      - name: Remove signing material from the runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP/kilalao-release.jks"

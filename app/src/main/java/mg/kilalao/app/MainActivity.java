@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -24,14 +25,16 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
-/** A native, offline Android shell. No network or device permissions required. */
+/** Offline games with a separate native updater; remote WebView content stays blocked. */
 public final class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
     private WebView web;
+    private AppUpdater updater;
     // The bundled game UI requires JS; remote content and file access are blocked.
     @SuppressLint("SetJavaScriptEnabled")
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        updater = new AppUpdater(this);
         web = new WebView(this);
         web.setBackgroundColor(Color.rgb(246,245,238));
         web.setOnApplyWindowInsetsListener((view,insets) -> {
@@ -49,6 +52,10 @@ public final class MainActivity extends Activity {
         settings.setAllowUniversalAccessFromFileURLs(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
+        web.addJavascriptInterface(new Object() {
+            @JavascriptInterface public void checkForUpdates() { runOnUiThread(() -> updater.check(true)); }
+            @JavascriptInterface public String version() { return BuildConfig.VERSION_NAME; }
+        }, "KilalaoUpdates");
         web.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri=request.getUrl();
@@ -89,6 +96,7 @@ public final class MainActivity extends Activity {
         setContentView(web);
         web.requestApplyInsets();
         web.loadUrl("https://"+HOST+"/assets/index.html");
+        updater.check(false);
     }
     private static WebResourceResponse empty(int status,String reason) {
         return new WebResourceResponse("text/plain","UTF-8",status,reason,null,new ByteArrayInputStream(new byte[0]));
@@ -99,6 +107,6 @@ public final class MainActivity extends Activity {
         });
     }
     @Override protected void onPause() { web.evaluateJavascript("saveGame()",null);web.onPause();super.onPause(); }
-    @Override protected void onResume() { super.onResume();if(web!=null)web.onResume(); }
-    @Override protected void onDestroy() { if(web!=null){web.destroy();web=null;}super.onDestroy(); }
+    @Override protected void onResume() { super.onResume();if(web!=null)web.onResume();if(updater!=null)updater.resume(); }
+    @Override protected void onDestroy() { if(updater!=null)updater.close();if(web!=null){web.removeJavascriptInterface("KilalaoUpdates");web.destroy();web=null;}super.onDestroy(); }
 }

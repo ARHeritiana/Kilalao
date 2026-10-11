@@ -43,7 +43,7 @@ const LEARNING = {
     "strategy": [
       "For normal Nim, compute the bitwise XOR of all heap sizes. If it is nonzero, reduce one heap so that the new XOR is zero. For example, (3,4,5) can become (1,4,5).",
       "In misère Nim, use normal Nim strategy while at least two heaps exceed one. When just one large heap remains, reduce it to zero or one so that an odd number of single counters remains for your opponent.",
-      "For a new rule set, start with tiny positions: a position with no move loses; a position with a move to a losing position wins. The XOR of raw heap sizes does not automatically solve other variants."
+      "For a new normal-play rule set, start with tiny positions: a position with no move loses; a position with a move to a losing position wins. The XOR of raw heap sizes does not automatically solve other variants."
     ],
     "research": [
       "Charles L. Bouton’s 1901 paper gave Nim a complete mathematical analysis. The losing positions of normal Nim have XOR zero: every legal move breaks that condition, while every nonzero position has a move that restores it.",
@@ -188,7 +188,7 @@ const LEARNING = {
     "id": "sprouts",
     "rules": [
       "Begin with a few dots on a drawing surface. Players alternate drawing a curve from one dot to another, or from a dot back to itself.",
-      "A curve may not cross or touch an existing curve, and may touch dots only at its endpoints.",
+      "A curve may meet existing curves only at its chosen endpoint dots; elsewhere it cannot cross, touch, or retrace a curve. It may touch dots only at its endpoints.",
       "Add one new dot somewhere on the new curve. No dot may have more than three incident line ends; a loop uses two at its starting dot.",
       "The first player unable to draw a legal curve loses."
     ],

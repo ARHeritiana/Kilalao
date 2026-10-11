@@ -61,14 +61,41 @@ function move(original,a){let s=clone(original);if(s.won)return bad(original,'St
  case'clobber':{let f=a.from,t=a.to;if(s.board[f]!==p||s.board[t]!==3-p||!neighbors(f,s.cols,s.rows).includes(t))return bad(original,'Capture an adjacent opponent piece horizontally or vertically.');s.board[f]=0;s.board[t]=p;normalEnd(s,clobberLegal);break;}
  case'hackenbush':{let e=s.edges[a.index];if(!e?.live||e.color!==p)return bad(original,'Cut a live edge of your own color.');e.live=false;let connected=new Set([0,1,2,3]),change=true;while(change){change=false;for(let q of s.edges.filter(e=>e.live))if(connected.has(q.a)||connected.has(q.b)){if(!connected.has(q.a)||!connected.has(q.b))change=true;connected.add(q.a);connected.add(q.b);}}s.edges.forEach(q=>{if(!connected.has(q.a)||!connected.has(q.b))q.live=false;});normalEnd(s,(t,pp)=>t.edges.some(e=>e.live&&e.color===pp));break;}
  case'sprouts':{
- let aa=a.from,bb=a.to,path=a.path;if(!s.nodes[aa]||!s.nodes[bb]||!Array.isArray(path)||path.length<3)return bad(original,'Draw a curve from one dot to another, or back to itself.');if(s.nodes[aa].d+(aa===bb?2:1)>3||s.nodes[bb].d+(aa===bb?2:1)>3)return bad(original,'A dot can have at most three line ends.');
- path=path.map(q=>({x:+q.x,y:+q.y}));if(path.some(q=>!Number.isFinite(q.x)||!Number.isFinite(q.y)||q.x<5||q.x>395||q.y<5||q.y>355))return bad(original,'Keep the curve inside the drawing area.');path[0]={x:s.nodes[aa].x,y:s.nodes[aa].y};path[path.length-1]={x:s.nodes[bb].x,y:s.nodes[bb].y};let length=path.slice(1).reduce((t,v,i)=>t+Math.hypot(v.x-path[i].x,v.y-path[i].y),0);if(length<40)return bad(original,'Draw a longer curve so a new dot can fit.');
+ let aa=a.from,bb=a.to,path=a.path;
+ if(!s.nodes[aa]||!s.nodes[bb]||!Array.isArray(path)||path.length<2)return bad(original,'Draw a curve from one dot to another, or back to itself.');
+ if(s.nodes[aa].d+(aa===bb?2:1)>3||s.nodes[bb].d+(aa===bb?2:1)>3)return bad(original,'A dot can have at most three line ends.');
+ path=path.map(q=>({x:+q.x,y:+q.y}));
+ if(path.some(q=>!Number.isFinite(q.x)||!Number.isFinite(q.y)||q.x<5||q.x>395||q.y<5||q.y>355))return bad(original,'Keep the curve inside the drawing area.');
+ path[0]={x:s.nodes[aa].x,y:s.nodes[aa].y};path[path.length-1]={x:s.nodes[bb].x,y:s.nodes[bb].y};path=cleanPath(path);
+ let length=path.slice(1).reduce((t,v,i)=>t+Math.hypot(v.x-path[i].x,v.y-path[i].y),0);
+ if(length<40)return bad(original,'Draw a longer curve so a new dot can fit.');
  for(let i=0;i<path.length-1;i++){
- for(let j=i+2;j<path.length-1;j++)if(!(aa===bb&&i===0&&j===path.length-2)&&segmentsCross(path[i],path[i+1],path[j],path[j+1]))return bad(original,'The curve cannot cross itself.');
- for(let nodeIndex=0;nodeIndex<s.nodes.length;nodeIndex++){let q=s.nodes[nodeIndex];if((nodeIndex===aa&&Math.hypot(path[i].x-q.x,path[i].y-q.y)<18)||(nodeIndex===bb&&Math.hypot(path[i+1].x-q.x,path[i+1].y-q.y)<18))continue;if(pointSegment(q,path[i],path[i+1])<7)return bad(original,'A curve cannot pass through another dot.');}
- for(let edge of s.edges)for(let j=0;j<edge.path.length-1;j++){if(i===0&&(aa===edge.a||aa===edge.b)&&((j===0&&aa===edge.a)||(j===edge.path.length-2&&aa===edge.b)))continue;if(i===path.length-2&&(bb===edge.a||bb===edge.b)&&((j===0&&bb===edge.a)||(j===edge.path.length-2&&bb===edge.b)))continue;if(segmentsCross(path[i],path[i+1],edge.path[j],edge.path[j+1]))return bad(original,'Curves cannot cross.');}}
- let half=length/2,acc=0,mid,k=0;for(;k<path.length-1;k++){let l=Math.hypot(path[k+1].x-path[k].x,path[k+1].y-path[k].y);if(acc+l>=half){let t=(half-acc)/l;mid={x:path[k].x+t*(path[k+1].x-path[k].x),y:path[k].y+t*(path[k+1].y-path[k].y)};break;}acc+=l;}
- const ni=s.nodes.length;s.nodes[aa].d++;s.nodes[bb].d++;s.nodes.push({...mid,d:2});s.edges.push({a:aa,b:ni,path:[...path.slice(0,k+1),mid]},{a:ni,b:bb,path:[mid,...path.slice(k+1)]});next(s);break;}
+  for(let j=i+1;j<path.length-1;j++){
+   const allowed=[];
+   if(j===i+1)allowed.push(path[j]);
+   if(aa===bb&&i===0&&j===path.length-2)allowed.push(path[0]);
+   if(segmentsConflict(path[i],path[i+1],path[j],path[j+1],allowed))return bad(original,'The curve cannot cross or retrace itself.');
+  }
+  for(let n=0;n<s.nodes.length;n++){
+   const near=q=>Math.hypot(q.x-s.nodes[n].x,q.y-s.nodes[n].y)<18;
+   if((n===aa&&path.slice(0,i+1).every(near))||(n===bb&&path.slice(i+1).every(near)))continue;
+   if(pointSegment(s.nodes[n],path[i],path[i+1])<7)return bad(original,'A curve cannot pass through another dot.');
+  }
+  for(let edge of s.edges){
+   // Older saves may contain duplicate sample points at the inserted dot.
+   const ep=cleanPath(edge.path);
+   for(let j=0;j<ep.length-1;j++){
+    const allowed=[];
+    if(i===0&&((j===0&&aa===edge.a)||(j===ep.length-2&&aa===edge.b)))allowed.push(s.nodes[aa]);
+    if(i===path.length-2&&((j===0&&bb===edge.a)||(j===ep.length-2&&bb===edge.b)))allowed.push(s.nodes[bb]);
+    if(segmentsConflict(path[i],path[i+1],ep[j],ep[j+1],allowed))return bad(original,'Curves cannot cross or retrace an existing curve.');
+   }
+  }
+ }
+ let half=length/2,acc=0,mid,k=0;
+ for(;k<path.length-1;k++){let l=Math.hypot(path[k+1].x-path[k].x,path[k+1].y-path[k].y);if(acc+l>=half){let t=(half-acc)/l;mid={x:path[k].x+t*(path[k+1].x-path[k].x),y:path[k].y+t*(path[k+1].y-path[k].y)};break;}acc+=l;}
+ const ni=s.nodes.length;s.nodes[aa].d++;s.nodes[bb].d++;s.nodes.push({...mid,d:2});
+ s.edges.push({a:aa,b:ni,path:cleanPath([...path.slice(0,k+1),mid])},{a:ni,b:bb,path:cleanPath([mid,...path.slice(k+1)])});next(s);break;}
  case'boxes':{let {type,r,c}=a;if(!['h','v'].includes(type)||!Number.isInteger(r)||!Number.isInteger(c)||r<0||c<0||r>=(type==='h'?s.n:s.n-1)||c>=(type==='h'?s.n-1:s.n))return bad(original,'Choose an undrawn line.');let key=type+':'+r+':'+c;if(s.edges[key])return bad(original,'That line is already drawn.');s.edges[key]=p;let count=0;for(let x=0;x<s.n-1;x++)for(let y=0;y<s.n-1;y++){let q=x+':'+y;if(!s.boxes[q]&&['h:'+x+':'+y,'h:'+(x+1)+':'+y,'v:'+x+':'+y,'v:'+x+':'+(y+1)].every(k=>s.edges[k])){s.boxes[q]=p;s.scores[p-1]++;count++;}}if(Object.keys(s.boxes).length===(s.n-1)**2){let w=s.scores[0]===s.scores[1]?0:s.scores[0]>s.scores[1]?1:2;finish(s,w,w?'Player '+w+' wins!':'A draw!');}else if(!count)next(s);break;}
  case'hex':{let i=a.index;if(!Number.isInteger(i)||i<0||i>=s.board.length||s.board[i])return bad(original,'Place a stone on an empty hexagon.');s.board[i]=p;if(hexConnected(s,p))finish(s,p,'Player '+p+' connects the edges!');else next(s);break;}
  case'sim':{let f=a.from,t=a.to;if(!s.nodes[f]||!s.nodes[t]||f===t)return bad(original,'Choose two different vertices.');let key=[f,t].sort((a,b)=>a-b).join(':');if(s.edges[key])return bad(original,'That connection is already colored.');s.edges[key]=p;if(range(6).some(k=>k!==f&&k!==t&&s.edges[[f,k].sort((a,b)=>a-b).join(':')]===p&&s.edges[[t,k].sort((a,b)=>a-b).join(':')]===p))finish(s,3-p,'Triangle! Player '+(3-p)+' wins.');else next(s);break;}
@@ -82,7 +109,7 @@ function move(original,a){let s=clone(original);if(s.won)return bad(original,'St
  case'mastermind':{let g=a.guess;if(!Array.isArray(g)||g.length!==4||g.some(v=>!Number.isInteger(v)||v<0||v>5))return bad(original,'Choose four colors.');let exact=0,aa=Array(6).fill(0),bb=Array(6).fill(0);g.forEach((v,i)=>{if(v===s.secret[i])exact++;else{aa[v]++;bb[s.secret[i]]++;}});let partial=aa.reduce((t,v,i)=>t+Math.min(v,bb[i]),0);s.guesses.push({guess:g,exact,partial});if(exact===4)finish(s,1,'Code cracked!');else if(s.guesses.length>=s.max)finish(s,0,'Out of guesses. The secret is revealed.');break;}
  case'set':if(a.add){if(findSet(s.hand))return bad(original,'A SET is available. Look again, or ask for a hint.');if(!s.deck.length)return bad(original,'No cards remain in the deck.');s.hand.push(...s.deck.splice(0,3));}else{let ids=a.indices;if(!Array.isArray(ids)||ids.length!==3||new Set(ids).size!==3||ids.some(i=>!s.hand[i])||!isSet(ids.map(i=>s.hand[i])))return bad(original,'For each feature, all three must be the same or all different.');ids.sort((a,b)=>b-a).forEach(i=>s.hand.splice(i,1));while(s.hand.length<12&&s.deck.length)s.hand.push(s.deck.shift());s.found++;if(s.found>=s.goal)finish(s,1,'Five SETs found!');else if(!s.deck.length&&!findSet(s.hand))finish(s,1,'All available SETs found!');}break;
  case'queens':{let i=a.index;if(!Number.isInteger(i)||i<0||i>=s.board.length)return bad(original,'Choose a square.');s.board[i]^=1;if(s.board.filter(Boolean).length===s.rows&&queenConflicts(s).length===0)finish(s);break;}
- case'tangram':{let b=s.pieces[a.index];if(!b)return bad(original,'Choose a piece.');if(a.rotate)b.angle=(b.angle+45)%360;else if(a.flip)b.flip=!b.flip;else if(Number.isFinite(a.x)&&Number.isFinite(a.y)){b.x=Math.max(0,Math.min(500,a.x));b.y=Math.max(0,Math.min(420,a.y));}else return bad(original,'Drag, rotate, or flip a piece.');if(tangramSolved(s))finish(s);break;}
+ case'tangram':{let b=s.pieces[a.index];if(!b)return bad(original,'Choose a piece.');if(a.rotate)b.angle=(b.angle+45)%360;else if(a.flip)b.flip=!b.flip;else if(Number.isFinite(a.x)&&Number.isFinite(a.y)){b.x=Math.max(0,Math.min(500,a.x));b.y=Math.max(0,Math.min(420,a.y));}else return bad(original,'Drag, rotate, or flip a piece.');keepPieceOnBoard(b);if(tangramSolved(s))finish(s);break;}
  case'rubik':if(!['U','D','F','B','L','R'].includes(a.face)||![1,-1].includes(a.direction))return bad(original,'Choose a face turn.');cubeTurn(s,a.face,a.direction);if(s.trail.length&&s.trail.at(-1)[0]===a.face&&s.trail.at(-1)[1]===-a.direction)s.trail.pop();else s.trail.push([a.face,a.direction]);if(cubeSolved(s))finish(s);break;
  case'river':if(s.mode==='Farmer'){let side=s.banks[0],cargo=+a.cargo;if(![-1,1,2,3].includes(cargo)||cargo!==-1&&s.banks[cargo]!==side)return bad(original,'Take one passenger from the farmer’s bank, or cross alone.');s.banks[0]^=1;if(cargo!==-1)s.banks[cargo]^=1;if((s.banks[1]===s.banks[2]&&s.banks[0]!==s.banks[1])||(s.banks[2]===s.banks[3]&&s.banks[0]!==s.banks[2]))return bad(original,'Unsafe: the wolf eats the goat, or the goat eats the cabbage.');if(s.banks.every(v=>v===1))finish(s);}else{let m=+a.m,c=+a.c;if(!Number.isInteger(m)||!Number.isInteger(c)||m<0||c<0||m+c<1||m+c>2)return bad(original,'The boat carries one or two people.');let sign=s.boat===0?-1:1,L=[s.left[0]+sign*m,s.left[1]+sign*c];if(L.some(v=>v<0||v>3)||(L[0]>0&&L[1]>L[0])||(3-L[0]>0&&3-L[1]>3-L[0]))return bad(original,'Missionaries cannot be outnumbered on either bank.');s.left=L;s.boat^=1;if(L.every(v=>v===0))finish(s);}break;
  case'twentyfour':{let v;try{v=parseExpression(a.expression,s.numbers);}catch(e){return bad(original,e.message);}if(Math.abs(v-24)>1e-8)return bad(original,'That equals '+Number(v.toFixed(6))+'. Aim for 24.');finish(s,1,'Exactly 24!');break;}
@@ -105,14 +132,35 @@ function cubeFaces(s){let result={};for(let f of['U','L','F','R','B','D']){let t
 function cubeSolved(s){return Object.values(cubeFaces(s)).every(a=>a.every(v=>v===a[0]));}
 function tangramPieces(){let polys=[[[0,0],[200,0],[100,100]],[[0,0],[100,100],[0,200]],[[0,0],[0,100],[-50,50]],[[0,0],[50,-50],[100,0],[50,50]],[[0,0],[0,100],[-100,100]],[[0,0],[50,50],[-50,50]],[[0,0],[50,-50],[150,-50],[100,0]]];let targets=[[140,80],[140,80],[340,80],[240,180],[340,180],[240,180],[140,280]];return polys.map((poly,i)=>({poly,x:[110,290,410,70,400,220,170][i],y:[20,15,310,320,120,330,350][i],angle:[90,0,180,45,90,180,0][i],flip:false,target:targets[i]}));}
 function piecePoly(b){let a=b.angle*Math.PI/180,c=Math.cos(a),s=Math.sin(a);return b.poly.map(([x,y])=>{x=b.flip?-x:x;return{x:b.x+c*x-s*y,y:b.y+s*x+c*y};});}
+function keepPieceOnBoard(b){
+ const offsets=piecePoly({...b,x:0,y:0});
+ for(const [axis,size] of [['x',500],['y',420]]){
+  const min=Math.min(...offsets.map(v=>v[axis])),max=Math.max(...offsets.map(v=>v[axis]));
+  const low=Math.ceil((-min-1e-7)/10)*10,high=Math.floor((size-max+1e-7)/10)*10;
+  b[axis]=Math.max(low,Math.min(high,b[axis]));
+ }
+}
 function polygonsOverlap(a,b){for(let p of[a,b])for(let i=0;i<p.length;i++){let q=p[(i+1)%p.length],v=p[i],axis={x:q.y-v.y,y:v.x-q.x},pa=a.map(k=>k.x*axis.x+k.y*axis.y),pb=b.map(k=>k.x*axis.x+k.y*axis.y);if(Math.max(...pa)<=Math.min(...pb)+.01||Math.max(...pb)<=Math.min(...pa)+.01)return false;}return true;}
 function tangramSolved(s){let ps=s.pieces.map(piecePoly);if(ps.some(p=>p.some(v=>v.x<139.9||v.x>340.1||v.y<79.9||v.y>280.1)))return false;for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++)if(polygonsOverlap(ps[i],ps[j]))return false;return true;}
 function pointSegment(p,a,b){let dx=b.x-a.x,dy=b.y-a.y,t=((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1);t=Math.max(0,Math.min(1,t));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
 function segmentsCross(a,b,c,d){let cross=(u,v,w)=>(v.x-u.x)*(w.y-u.y)-(v.y-u.y)*(w.x-u.x);let x=cross(a,b,c),y=cross(a,b,d),z=cross(c,d,a),w=cross(c,d,b);if(x*y<0&&z*w<0)return true;if(Math.abs(x)<.0001&&pointSegment(c,a,b)<.01)return true;if(Math.abs(y)<.0001&&pointSegment(d,a,b)<.01)return true;if(Math.abs(z)<.0001&&pointSegment(a,c,d)<.01)return true;if(Math.abs(w)<.0001&&pointSegment(b,c,d)<.01)return true;return false;}
+function cleanPath(path){return path.filter((p,i)=>!i||Math.hypot(p.x-path[i-1].x,p.y-path[i-1].y)>1e-7);}
+function segmentsConflict(a,b,c,d,allowed){
+ if(!segmentsCross(a,b,c,d))return false;
+ const same=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y)<1e-7;
+ for(const p of allowed){
+  if(!(same(p,a)||same(p,b))||!(same(p,c)||same(p,d)))continue;
+  const q=same(p,a)?b:a,r=same(p,c)?d:c;
+  const ux=q.x-p.x,uy=q.y-p.y,vx=r.x-p.x,vy=r.y-p.y;
+  // A junction is legal only if the segments share this point alone.
+  if(Math.abs(ux*vy-uy*vx)>1e-7||ux*vx+uy*vy<=0)return false;
+ }
+ return true;
+}
 function parseExpression(expr,numbers){if(typeof expr!=='string'||expr.length>150||/[^\d\s()+*/−×÷-]/.test(expr))throw Error('Use the four numbers, + − × ÷, and parentheses only.');expr=expr.replace(/−/g,'-').replace(/×/g,'*').replace(/÷/g,'/');let tokens=expr.match(/\d+|[()+*/-]/g)||[],used=tokens.filter(x=>/^\d+$/.test(x)).map(Number).sort((a,b)=>a-b);if(!eq(used,numbers.slice().sort((a,b)=>a-b)))throw Error('Use each given number exactly once.');let i=0;function atom(){let t=tokens[i++];if(t==='('){let v=sum();if(tokens[i++]!==')')throw Error('Check your parentheses.');return v;}if(!t||!/^\d+$/.test(t))throw Error('Check your expression.');return+t;}function product(){let v=atom();while(['*','/'].includes(tokens[i])){let op=tokens[i++],w=atom();if(op==='/'&&Math.abs(w)<1e-12)throw Error('Division by zero is not allowed.');v=op==='*'?v*w:v/w;}return v;}function sum(){let v=product();while(['+','-'].includes(tokens[i])){let op=tokens[i++],w=product();v=op==='+'?v+w:v-w;}return v;}let result=sum();if(i!==tokens.length||!Number.isFinite(result))throw Error('Check your expression.');return result;}
 function solve24(nums){function go(items){if(items.length===1)return Math.abs(items[0].v-24)<1e-9?items[0].e:null;for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){let a=items[i],b=items[j],rest=items.filter((_,k)=>k!==i&&k!==j),candidates=[[a.v+b.v,'('+a.e+'+'+b.e+')'],[a.v-b.v,'('+a.e+'-'+b.e+')'],[b.v-a.v,'('+b.e+'-'+a.e+')'],[a.v*b.v,'('+a.e+'*'+b.e+')']];if(Math.abs(b.v)>1e-12)candidates.push([a.v/b.v,'('+a.e+'/'+b.e+')']);if(Math.abs(a.v)>1e-12)candidates.push([b.v/a.v,'('+b.e+'/'+a.e+')']);for(let[v,e]of candidates){let answer=go([...rest,{v,e}]);if(answer)return answer;}}return null;}return go(nums.map(v=>({v,e:String(v)})));}
 function lightsSolution(s){let n=s.board.length,m=range(n).map(i=>{let row=Array(n+1).fill(0);[i,...neighbors(i,s.cols,s.rows)].forEach(j=>row[j]=1);row[n]=s.board[i];return row;});let pivots=[],k=0;for(let c=0;c<n;c++){let p=m.findIndex((r,i)=>i>=k&&r[c]);if(p<0)continue;[m[k],m[p]]=[m[p],m[k]];for(let i=0;i<n;i++)if(i!==k&&m[i][c])for(let j=c;j<=n;j++)m[i][j]^=m[k][j];pivots.push(c);k++;}if(m.some(row=>!row.slice(0,n).some(Boolean)&&row[n]))return null;let x=Array(n).fill(0);pivots.forEach((c,i)=>x[c]=m[i][n]);return range(n).filter(i=>x[i]);}
 function shortestFrog(s){let start=s.board,goal='2220111',q=[[start,[]]],seen=new Set([start.join('')]);while(q.length){let [a,path]=q.shift();if(a.join('')===goal)return path;for(let i=0;i<7;i++){let t=move({...s,board:a,won:false},{index:i});if(t.ok){let key=t.state.board.join('');if(!seen.has(key)){seen.add(key);q.push([t.state.board,[...path,i]]);}}}}return null;}
-const API={init,move,MODES,clone,range,neighbors,eq,validSudoku,solveSudoku,kakuroValid,isSet,findSet,queenConflicts,cubeTurn,cubeFaces,cubeSolved,piecePoly,tangramSolved,parseExpression,solve24,lightsSolution,shortestFrog,domLegal,clobberLegal,hexConnected,segmentsCross};
+const API={init,move,MODES,clone,range,neighbors,eq,validSudoku,solveSudoku,kakuroValid,isSet,findSet,queenConflicts,cubeTurn,cubeFaces,cubeSolved,piecePoly,keepPieceOnBoard,tangramSolved,parseExpression,solve24,lightsSolution,shortestFrog,domLegal,clobberLegal,hexConnected,segmentsCross};
 if(typeof module!=='undefined')module.exports=API;root.KilalaoEngine=API;
 })(typeof window!=='undefined'?window:globalThis);

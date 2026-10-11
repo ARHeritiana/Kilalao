@@ -35,3 +35,30 @@ for(let mode of E.MODES.river)test('River crossing shortest safe solution: '+mod
 test('River crossing rejects unsafe banks and absent passengers',()=>{rejects(init('river'),{cargo:1});let s=apply(init('river'),{cargo:2});rejects(s,{cargo:1});rejects(init('river','Missionaries'),{m:1,c:0});rejects(init('river','Missionaries'),{m:3,c:0});});
 test('24 expressions are parsed safely and use all four numbers once',()=>{assert.ok(Math.abs(E.parseExpression('8/(3-8/3)',[3,3,8,8])-24)<1e-8);assert.throws(()=>E.parseExpression('1+2+3+4+4',[1,2,3,4]));assert.throws(()=>E.parseExpression('alert(24)',[1,2,3,4]));assert.throws(()=>E.parseExpression('4/(3-2-1)',[1,2,3,4]));for(let seed=1;seed<=25;seed++){let s=E.init('twentyfour',null,seed),solution=E.solve24(s.numbers);assert.ok(solution);s=apply(s,{expression:solution});assert.equal(s.won,true);}});
 test('Engine moves never mutate their input, and won sessions reject new moves',()=>{for(let g of catalog){let s=init(g.id),before=JSON.stringify(s);E.move(s,{});assert.equal(JSON.stringify(s),before);}let s=init('twentyfour');s.won=true;rejects(s,{expression:E.solve24(s.numbers)});});
+test('Sprouts rejects a doubled-back loop and accepts a straight legal stroke',()=>{
+ const s=init('sprouts');
+ rejects(s,{from:0,to:0,path:[{x:100,y:100},{x:180,y:100},{x:100,y:100}]});
+ const t=apply(s,{from:0,to:1,path:[{x:100,y:100},{x:300,y:100}]});
+ assert.equal(t.nodes.length,4);
+});
+test('Sprouts accepts legal endpoint junctions without allowing retraced edges',()=>{
+ let s=apply(init('sprouts'),{from:0,to:1,path:[{x:100,y:100},{x:180,y:100},{x:300,y:100}]});
+ rejects(s,{from:0,to:3,path:[{x:100,y:100},{x:150,y:100},{x:200,y:100}]});
+ s=apply(s,{from:2,to:3,path:[{x:200,y:280},{x:220,y:200},{x:200,y:100},{x:200,y:100}]});
+ assert.equal(s.nodes[3].d,3);
+ assert.ok(s.edges.every(e=>e.path.every((v,i)=>!i||Math.hypot(v.x-e.path[i-1].x,v.y-e.path[i-1].y)>0)));
+});
+test('Tangram keeps entire pieces reachable after edge drags, rotations and flips',()=>{
+ let s=init('tangram');
+ for(let i=0;i<7;i++)for(let [x,y] of [[0,0],[500,420]]){
+  s=apply(s,{index:i,x,y});
+  for(let turn=0;turn<8;turn++){
+   s=apply(s,{index:i,rotate:true});s=apply(s,{index:i,flip:true});
+   assert.ok(E.piecePoly(s.pieces[i]).every(p=>p.x>=-1e-7&&p.x<=500+1e-7&&p.y>=-1e-7&&p.y<=420+1e-7));
+  }
+ }
+});
+test('Sprouts permits a genuine loop with dense samples near its endpoint',()=>{
+ const path=[[100,100],[105,105],[120,100],[130,80],[110,60],[90,50],[70,70],[80,80],[95,95],[100,100]].map(([x,y])=>({x,y}));
+ const s=apply(init('sprouts'),{from:0,to:0,path});assert.equal(s.nodes[0].d,2);assert.equal(s.nodes[3].d,2);
+});

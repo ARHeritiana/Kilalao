@@ -4,7 +4,7 @@ An offline Android app with **24 mathematical and logic game families**, touch c
 
 ## Install
 
-Download **[Kilalao-1.0.0-debug.apk](APK/Kilalao-1.0.0-debug.apk)** from this repository, open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later** and an up-to-date Android System WebView. The APK is a signed development build, suitable for trying the app; it is not a Google Play release.
+Download **[Kilalao-1.0.1-debug.apk](APK/Kilalao-1.0.1-debug.apk)** from this repository, open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later** and an up-to-date Android System WebView. The APK is a signed development build, suitable for trying the app; it is not a Google Play release.
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app requests **no device or internet permissions**, contains no analytics or advertisements, and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
 

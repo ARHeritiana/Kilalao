@@ -127,7 +127,8 @@ final class AppUpdater {
         }
         Uri uri = UpdateApkProvider.uri();
         Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION).setClipData(ClipData.newRawUri("Kilalao update", uri));
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setClipData(ClipData.newRawUri("Kilalao update", uri));
         try {
             // Game data is persisted by MainActivity.onPause before the installer replaces the app.
             activity.startActivity(intent); ready = null;

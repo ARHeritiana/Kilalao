@@ -17,3 +17,7 @@
  .mode-label{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;width:100%;font-size:13px}
  .mode-select{width:100%;max-width:none;font-size:14px}
 }
+
+/* Browser focus/scroll-to-control must account for the fixed action dock. */
+html{scroll-padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.cube-turn-controls,.number-pad,.controls{scroll-margin-bottom:calc(100px + env(safe-area-inset-bottom))}

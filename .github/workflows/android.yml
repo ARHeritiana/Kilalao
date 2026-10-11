@@ -25,7 +25,10 @@ jobs:
         if: always()
         with:
           name: Mobile-layout-screenshots
-          path: screenshots/
+          path: |
+            screenshots/
+            test-results/
+            playwright-report/
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

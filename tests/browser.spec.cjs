@@ -63,7 +63,7 @@ test('Short phones and landscape keep cube and puzzle controls scrollable above 
    await page.goto('/#game/'+id);if(id==='sliding')await page.locator('#mode').selectOption('Klotski');
    const control=page.locator(selector);await control.scrollIntoViewIfNeeded();
    const r=await control.boundingBox(),dock=await page.locator('.action-dock').boundingBox();
-   expect(r.y).toBeGreaterThanOrEqual(0);expect(r.y+r.height).toBeLessThanOrEqual(dock.y);
+   expect(r.y,id+' top at '+viewport.width+'×'+viewport.height).toBeGreaterThanOrEqual(0);expect(r.y+r.height,id+' bottom at '+viewport.width+'×'+viewport.height).toBeLessThanOrEqual(dock.y);
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
  }

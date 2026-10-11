@@ -1,0 +1,5 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const E=require('../app/src/main/assets/engines.js'),Cube=require('../app/src/main/assets/cube3d.js');
+const css=v=>[v[0],-v[1],v[2]];
+function rotate(v,axis,angle){const [x,y,z]=v,c=Math.round(Math.cos(angle*Math.PI/180)),s=Math.round(Math.sin(angle*Math.PI/180));return(axis===0?[x,c*y-s*z,s*y+c*z]:axis===1?[c*x+s*z,y,-s*x+c*z]:[c*x-s*y,s*x+c*y,z]).map(x=>x||0);}
+test('CSS 3D rotation matches engine positions and sticker normals on all 12 turns',()=>{for(const mode of ['3×3','2×2'])for(const face of ['U','D','F','B','L','R'])for(const d of [-1,1]){const before=E.init('rubik',mode,17),after=E.move(before,{face,direction:d}).state,spec=Cube.turnSpec(face,d);for(let i=0;i<before.stickers.length;i++){const b=before.stickers[i],a=after.stickers[i];for(const key of ['pos','norm']){const expected=b.pos[spec.axis]===spec.side?rotate(css(b[key]),spec.axis,spec.angle):css(b[key]);assert.deepEqual(css(a[key]).map(x=>x||0),expected.map(x=>x||0));}}}});

@@ -4,9 +4,15 @@ An offline Android app with **24 mathematical and logic game families**, touch c
 
 ## Install
 
-Download **[Kilalao-1.0.1-debug.apk](APK/Kilalao-1.0.1-debug.apk)** from this repository, open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later** and an up-to-date Android System WebView. The APK is a signed development build, suitable for trying the app; it is not a Google Play release.
+Download **[Kilalao-1.1.0-debug.apk](APK/Kilalao-1.1.0-debug.apk)** from this repository, open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later** and an up-to-date Android System WebView. The APK is a signed development build, suitable for trying the app; it is not a Google Play release.
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app requests **no device or internet permissions**, contains no analytics or advertisements, and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
+
+## Interface in 1.1.0
+
+The phone interface has a compact game header, full-width boards, separate Play/Learn controls, and a fixed Undo/Hint/New game dock. Home navigation uses a bottom bar. Moves animate with moving disks/tiles, fading captures, drawn connections, and cell feedback; reduced-motion settings are respected. Both cube sizes have an orbitable CSS 3D display, labeled faces, and animated layer turns. No game families or variants were added.
+
+**Upgrade from 1.0.x:** the earlier development signing key was lost when the previous workspace was cleared. This APK uses a new development certificate, so Android cannot install it over 1.0.x. Uninstalling the older app first deletes its locally saved games and progress. The new signing key is kept separately from the source repository for future builds.
 
 ## Games
 
@@ -33,7 +39,7 @@ Play and the learning guides work without an internet connection. Source article
 | SET | Four features, three values, five-set practice rounds |
 | N-Queens | Five or eight queens |
 | Tangram | Seven draggable, rotatable, flippable pieces; classic square challenge |
-| Rubik’s Cube | Real 3×3 and 2×2 face permutations, unfolded display |
+| Rubik’s Cube | Interactive 3D 3×3 and 2×2 cubes, animated face turns |
 | River crossing | Farmer–wolf–goat–cabbage; missionaries and cannibals |
 | The 24 Game | Solvable four-number challenges and a safe arithmetic parser |
 
@@ -55,7 +61,7 @@ For a production release, provide your own protected signing configuration and r
 
 ## Test
 
-Node 22 or later is recommended. The game engines have no JavaScript runtime dependencies; DOM interaction tests use the development dependency jsdom:
+Node 22 or later is recommended. The game engines have no JavaScript runtime dependencies; DOM interaction tests use jsdom; browser layout checks use Playwright. Both are development-only dependencies:
 
 ```sh
 npm ci
@@ -66,6 +72,8 @@ npm run check
 
 The rule tests cover all 24 families, including shortest Hanoi solutions, legal traffic/frog/river solutions, both cube sizes and their inverse turns, Sudoku completion, Lights Out solvability, repeated-color feedback, tangram overlap detection, and arithmetic parser validation.
 
+For browser checks, run `npx playwright install chromium` followed by `npm run test:browser`. These check all 24 screens at five viewport widths, move animations, reduced motion, and the 3D cube; screenshots are workflow artifacts for review.
+
 The GitHub Actions workflow runs these checks, builds the Android APK, and uploads the APK and lint report as workflow artifacts on pushes and pull requests.
 
 ## Architecture
@@ -73,6 +81,8 @@ The GitHub Actions workflow runs these checks, builds the Android APK, and uploa
 - `app/src/main/java/mg/kilalao/app/MainActivity.java`: native Android Activity, local HTTPS asset interception, external browser links, Android back handling and dialogs.
 - `app/src/main/assets/engines.js`: deterministic, DOM-independent game rules and solving helpers.
 - `app/src/main/assets/ui.js`: responsive touch interface, undo, hints, local saves and learning navigation.
+- `app/src/main/assets/cube3d.js`: local 3D cubies, sticker rendering, orbit controls, and layer animations.
+- `app/src/main/assets/motion.js`: move animations and reduced-motion handling.
 - `app/src/main/assets/catalog.js`: exactly 24 families; variants belong inside each family.
 - `app/src/main/assets/learning.js`: original educational summaries and source links.
 - `tests/engines.test.js`: game correctness tests.

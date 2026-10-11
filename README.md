@@ -4,15 +4,15 @@ An offline Android app with **24 mathematical and logic game families**, touch c
 
 ## Install
 
-Download **[Kilalao-1.1.0-debug.apk](APK/Kilalao-1.1.0-debug.apk)** from this repository, open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later** and an up-to-date Android System WebView. The APK is a signed development build, suitable for trying the app; it is not a Google Play release.
+Download **[Kilalao-1.1.1-debug.apk](APK/Kilalao-1.1.1-debug.apk)** from this repository, open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later** and an up-to-date Android System WebView. The APK is a signed development build, suitable for trying the app; it is not a Google Play release.
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app requests **no device or internet permissions**, contains no analytics or advertisements, and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
 
-## Interface in 1.1.0
+## Interface in 1.1.1
 
 The phone interface has a compact game header, full-width boards, separate Play/Learn controls, and a fixed Undo/Hint/New game dock. Home navigation uses a bottom bar. Moves animate with moving disks/tiles, fading captures, drawn connections, and cell feedback; reduced-motion settings are respected. Both cube sizes have an orbitable CSS 3D display, labeled faces, and animated layer turns. No game families or variants were added.
 
-**Upgrade from 1.0.x:** the earlier development signing key was lost when the previous workspace was cleared. This APK uses a new development certificate, so Android cannot install it over 1.0.x. Uninstalling the older app first deletes its locally saved games and progress. The new signing key is kept separately from the source repository for future builds.
+**Installation over an older build:** this tested 1.1.1 APK uses the GitHub Actions runner's debug signing certificate, which differs from the bundled 1.1.0 and 1.0.x certificates. Android cannot update those installations in place. Uninstalling an older installation deletes its saved games and progress. See [the UI review and build validation](UI_REVIEW.md) for the APK checksum, certificate fingerprint, and test evidence.
 
 ## Games
 
@@ -93,3 +93,9 @@ No API key, server, OpenAI API usage, or paid service is required. The Android a
 ## Attribution
 
 Source code retains this repository’s MIT license. Educational text and illustrations were written for Kilalao. Named games, commercial product names, and their trademarks belong to their respective owners; this is an independent educational app, not an official product of those publishers. Linked research belongs to its authors and is summarized, not reproduced.
+
+### Mobile usability follow-up · 1.1.1
+
+Category buttons wrap so every category is visible. On phones, the mode selector spans the available width and displays longer names clearly. Learning sections have persistent URLs; reloading retains the selected section and Android Back or Escape returns to Play before the catalogue. Keyboard focus survives board updates. Hanoi disks lift above the pegs during moves. The existing animated, orbitable 3D cubes are retained, with both sizes and all twelve turn directions covered by tests.
+
+The expanded browser checks cover every available mode at five widths, short phones, landscape controls, and navigation across reloads and Back. Android builds and browser screenshots are available in the workflow artifacts.

@@ -1,5 +1,7 @@
 # Kilalao 1.1.0 validation
 
+Historical validation for 1.1.0. See [UI_REVIEW.md](UI_REVIEW.md) for the validated 1.1.1 follow-up and its signing details.
+
 Validated on 2026-10-11. This release implements the requested mobile UI redesign, game animations, and interactive 3D cubes.
 
 ## Completed local checks

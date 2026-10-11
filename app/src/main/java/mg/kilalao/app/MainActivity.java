@@ -94,9 +94,8 @@ public final class MainActivity extends Activity {
         return new WebResourceResponse("text/plain","UTF-8",status,reason,null,new ByteArrayInputStream(new byte[0]));
     }
     @Override public void onBackPressed() {
-        web.evaluateJavascript("location.hash",value -> {
-            if(value!=null && !"\"\"".equals(value) && !"\"#home\"".equals(value)) web.evaluateJavascript("location.hash='home'",null);
-            else finish();
+        web.evaluateJavascript("navigateBack()",value -> {
+            if(!"true".equals(value)) finish();
         });
     }
     @Override protected void onPause() { web.evaluateJavascript("saveGame()",null);web.onPause();super.onPause(); }

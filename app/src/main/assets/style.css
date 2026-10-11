@@ -7,3 +7,13 @@
 @media(max-width:360px){.brand-note{display:none}.game-heading span{display:none}.game-heading h1{font-size:17px}.position-bar{align-items:stretch}.mode-label{flex:1;justify-content:flex-end}.mode-select{min-width:0;max-width:155px}.cube-scene{height:225px}.card-body{padding:11px}.card h3{font-size:15px}}
 @media(min-width:851px){.action-dock{left:50%;right:auto;width:580px;transform:translateX(-50%);border:1px solid var(--line);border-radius:20px 20px 0 0}.main-nav{left:50%;right:auto;width:580px;transform:translateX(-50%);border:1px solid var(--line);border-radius:20px 20px 0 0}.game-switch{max-width:360px}.game-topbar{padding-top:20px}.game-heading h1{font-size:24px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Keep every category and the full mode name visible without precision scrolling. */
+.filters{flex-wrap:wrap;overflow:visible}.filter{min-height:48px}
+@media(max-width:540px){
+ .position-bar{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+ .game-status{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+ .game-status strong{min-width:0}.game-status span{flex-shrink:0}
+ .mode-label{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;width:100%;font-size:13px}
+ .mode-select{width:100%;max-width:none;font-size:14px}
+}

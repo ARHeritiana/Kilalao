@@ -39,7 +39,9 @@ const GameMotion=(()=>{
    if((Math.abs(dx)>1||Math.abs(dy)>1)&&prev.rect.width&&now.rect.width){
     const svg=now.el.namespaceURI==='http://www.w3.org/2000/svg';
     now.el.style.transformOrigin='center';
-    run(now.el,[{transform:`translate(${dx}px,${dy}px)`},{transform:'translate(0,0)'}],svg?220:260);changes++;
+    const frames=[{transform:`translate(${dx}px,${dy}px)`}];
+    if(newState.id==='hanoi'&&id.startsWith('motion:disk-'))frames.push({transform:`translate(${dx/2}px,${Math.min(dy,0)-90}px)`,offset:.5});
+    frames.push({transform:'translate(0,0)'});run(now.el,frames,newState.id==='hanoi'?320:svg?220:260);changes++;
    }else if(prev.html!==now.html){
     run(now.el,[{opacity:.45},{opacity:1}],180);changes++;
    }

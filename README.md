@@ -93,3 +93,9 @@ No API key, server, OpenAI API usage, or paid service is required. The Android a
 ## Attribution
 
 Source code retains this repository’s MIT license. Educational text and illustrations were written for Kilalao. Named games, commercial product names, and their trademarks belong to their respective owners; this is an independent educational app, not an official product of those publishers. Linked research belongs to its authors and is summarized, not reproduced.
+
+### Mobile usability follow-up · 1.1.1
+
+Category buttons wrap so every category is visible. On phones, the mode selector spans the available width and displays longer names clearly. Learning sections have persistent URLs; reloading retains the selected section and Android Back or Escape returns to Play before the catalogue. Keyboard focus survives board updates. Hanoi disks lift above the pegs during moves. The existing animated, orbitable 3D cubes are retained, with both sizes and all twelve turn directions covered by tests.
+
+The expanded browser checks cover every available mode at five widths, short phones, landscape controls, and navigation across reloads and Back. Android builds and browser screenshots are available in the workflow artifacts.

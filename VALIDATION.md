@@ -13,13 +13,15 @@ Validated on 2026-10-11. This release implements the requested mobile UI redesig
 - Every bundled asset was compared byte-for-byte with its final source file.
 - `APK/SHA256SUMS` includes the previous 1.0.1 build and the new 1.1.0 build.
 
-## Browser and device limits
+## Remote browser validation and device limits
 
 The local headless browser cannot launch because the environment blocks its process-singleton socket. No local browser screenshots, physical-device run, or emulator run were completed. DOM and geometry tests do not establish device appearance or animation performance.
 
-GitHub Actions now includes Playwright checks for all game screens at 320, 360, 390, 480, and 800 CSS pixels, large navigation/action targets, horizontal overflow, real move animations, reduced motion, 3D cube controls, and phone screenshots. The remote result is recorded separately after the run; these checks must not be described as passing solely because they are configured.
+All eight Playwright checks passed in [GitHub Actions run #3](https://github.com/ARHeritiana/Kilalao/actions/runs/38155174774) for source commit `8e90d2d732eb281ca5ff273ba756d648d1b67fde`. The checks cover all 24 game screens at 320, 360, 390, 480, and 800 CSS pixels, large navigation/action targets, horizontal overflow, real move animations, reduced motion, and 3D cube controls. The remote Android build and lint also passed; the full workflow completed successfully.
 
-The previous Actions run failed while the Android setup action requested Google's removed `tools` package. The workflow now requests only `platform-tools`, `platforms;android-35`, and `build-tools;35.0.0` explicitly.
+Inspected the generated 390×844 screenshots of Home, Hanoi, Sudoku, the 3D cube, and the cube learning page. The layout fits its viewport, the Sudoku keypad and cube turn controls remain above the fixed action dock, and the cube renders with the expected visible top/front/right faces. Browser checks and screenshots complement the DOM/geometry tests; they do not replace physical Android testing.
+
+The previous Actions run failed while the Android setup action requested Google's removed `tools` package. The workflow now requests only `platform-tools`, `platforms;android-35`, and `build-tools;35.0.0` explicitly. That setup step succeeded in run #3.
 
 ## Signing and upgrade
 

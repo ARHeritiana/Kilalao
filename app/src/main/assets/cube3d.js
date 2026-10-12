@@ -57,7 +57,7 @@ const Cube3D=(()=>{
    if(drag||e.isPrimary===false)return;
    const sticker=e.target.closest?.('[data-sticker-face]');
    drag={id:e.pointerId,x:e.clientX,y:e.clientY,view:{...view},sticker,done:false};
-   scene.setPointerCapture?.(e.pointerId);if(!sticker)scene.classList.add('orbiting');e.preventDefault();
+   try{scene.setPointerCapture(e.pointerId);}catch{}if(!sticker)scene.classList.add('orbiting');e.preventDefault();
   });
   scene.addEventListener('pointermove',e=>{
    if(!drag||drag.id!==e.pointerId||drag.done)return;

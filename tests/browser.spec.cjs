@@ -115,3 +115,20 @@ test('Cube camera maths matches the browser, and a real finger swipe turns a row
  expect(await page.locator('.cube-view').getAttribute('style')).not.toBe(view);
  await expect(page.locator('.game-status')).toContainText('1 move');
 });
+
+test('Every game demo makes only legal moves through the real controls and restores the player\'s game',async({page})=>{
+ test.setTimeout(240000);
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.setViewportSize({width:390,height:844});
+ for(const g of catalog){
+  await page.goto('/#game/'+g.id);await expect(page.locator('#boardarea')).toBeVisible();
+  const before=await page.evaluate(()=>JSON.stringify(current));
+  const r=await page.evaluate(async id=>{let rejected=[];const reject=GameMotion.reject,say=toast;GameMotion.reject=root=>{rejected.push(document.querySelector('#toast').textContent);reject(root);};let end;const ok=await Demo.start(id,{fast:true,inspect:(state,undo)=>{end={moves:state.moves,undo};}});GameMotion.reject=reject;return{ok,end,rejected};},g.id);
+  expect(r.ok,g.id+' demo completed').toBe(true);
+  expect(r.rejected,g.id+' demo made no illegal move').toEqual([]);
+  expect(r.end.undo,g.id+' demo moved pieces').toBeGreaterThan(0);
+  expect(await page.evaluate(()=>JSON.stringify(current)),g.id+' game restored').toBe(before);
+  await expect(page.locator('.demo-bar')).toHaveCount(0);
+ }
+ expect(errors).toEqual([]);
+});

@@ -18,6 +18,12 @@ The phone interface has a compact game header, full-width boards, separate Play/
 
 River crossing now has an illustrated scene: two banks, a flowing river, and a boat that carries the chosen passengers across before they step onto the far bank (both puzzles). Hanoi disks lift clear of the pegs, carry across, and lower; a selected peg raises its top disk. Peg and frog jumps arc, captured pieces fade, and changed cells cross-fade their colors instead of flashing. A second tap during an animation continues from the on-screen position, SVG boards animate at the correct scale, unsafe moves gently shake the board, and a solved puzzle ends with a short celebration. Selections, toasts and screen changes transition smoothly. Reduced-motion settings still disable all of this.
 
+## Controls and guided demos (unreleased)
+
+Pieces are the controls. Seat river passengers by tapping them and tap the boat to row. Swipe the cube's stickers to turn rows, columns and middle slices; drag beside it to look around, or use the side rail for whole faces. Hanoi disks rise when their peg is chosen, then glide, pause and drop. Tangram corners snap into place. Nim counters, Mastermind colours, the 24 keypad, Klotski swipes and run slides replace typed numbers and arrow buttons. Peg Solitaire and Clobber show legal destinations, and Sudoku shades the chosen square's row, column and box.
+
+Every game has a narrated demo (▶ Demo, or *Watch the demo* on the Rules page): a finger plays real moves while a calm recorded voice explains, with captions. The voice is offline neural TTS bundled as small audio clips. Demos never change your saved game. See [UX_AUDIT.md](UX_AUDIT.md).
+
 ## Updates in 1.2.0
 
 The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; future release builds require the permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The signed 1.2.1 release includes this updater and supports GitHub’s longer JWT installation tokens. Pending downloads survive the Android installation-permission restart and are verified again before installation.

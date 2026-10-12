@@ -91,3 +91,49 @@ button:active:not(:disabled):not(.peg-tower){transform:scale(.97)}
 .river-captions span:nth-child(2){padding:0 4px}
 #snap-mark{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.4);transition:opacity .12s,transform .18s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 #snap-mark.on{opacity:1;transform:scale(1)}
+
+/* Nim: counters are the controls. */
+.heap{cursor:pointer;flex-wrap:wrap}
+.heap .stones{gap:6px}
+.stone{width:28px;height:28px;min-height:0;padding:0;border:0;border-radius:50%;background:var(--blue);transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .18s,box-shadow .18s}
+.stone:hover{background:#3478a0}
+.stone.taking{background:var(--red);transform:translateY(-5px);box-shadow:0 5px 6px -3px #163c3566}
+.stone.cut{margin-left:14px}
+.nim-help{text-align:center;margin:0 0 8px}
+/* Mastermind palette. */
+.color-dot.active{box-shadow:0 0 0 3px var(--ink),0 0 0 6px #fffef9}
+.palette{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;max-width:360px;margin:12px auto 4px}
+.swatch{aspect-ratio:1;min-height:44px;padding:0;border-radius:50%;border:3px solid #fffef9;box-shadow:0 0 0 1px var(--line)}
+/* 24 keypad. */
+.keypad24{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.keypad24 button{min-height:52px;font-size:20px;padding:6px}
+.keypad24 .num{background:var(--lime);font-family:Georgia,serif;font-size:24px;border-color:transparent}
+.keypad24 .num:disabled{opacity:.35}
+/* Where a selected piece may go. */
+.cell.target{box-shadow:inset 0 0 0 3px var(--gold);animation:target-pulse 1.2s ease-in-out infinite}
+.target-ring{animation:target-pulse 1.2s ease-in-out infinite}
+@keyframes target-pulse{50%{opacity:.45}}
+/* Sudoku guidance. */
+.sudoku .cell.peer{background:#eef1e3}
+.sudoku .cell.fixed.peer{background:#e2e8d6}
+.sudoku .cell.same{color:#b0482f;font-weight:800}
+
+/* Guided demo: caption bar, finger and ripple. Board input pauses while it plays. */
+.demo-bar{position:fixed;top:max(8px,env(safe-area-inset-top));left:8px;right:8px;max-width:600px;margin:0 auto;z-index:45;background:var(--ink);color:#fff;border-radius:18px;padding:10px 12px 12px;box-shadow:0 10px 30px #0003;animation:demo-in .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes demo-in{from{opacity:0;transform:translateY(-12px)}}
+.demo-head{display:flex;align-items:center;gap:8px}
+.demo-badge{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--lime)}
+.demo-dots{display:flex;gap:5px;flex:1}
+.demo-dots i{width:7px;height:7px;border-radius:50%;background:#ffffff40;transition:background-color .3s}
+.demo-dots i.on{background:var(--lime)}
+.demo-bar button{min-height:40px;padding:6px 14px;border:0;border-radius:12px;background:#ffffff1f;color:#fff;font-size:14px}
+.demo-bar button:hover{background:#ffffff33}
+.demo-bar p{margin:8px 2px 0;font:500 16px/1.45 Georgia,serif;min-height:46px}
+.demo-running #boardarea,.demo-running .position-bar,.demo-running .game-tools,.demo-running .learning-tabs{pointer-events:none}
+.demo-running .action-dock button:not(#demo){opacity:.4;pointer-events:none}
+.demo-finger{position:fixed;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:#ffffffa6;border:3px solid var(--ink);box-shadow:0 6px 16px #163c3540;z-index:44;pointer-events:none;opacity:0;transition:opacity .25s}
+.demo-finger.shown{opacity:1}
+.demo-finger.down{background:#d9ed87d9;width:40px;height:40px;left:-20px;top:-20px}
+.demo-ripple{position:fixed;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;border:3px solid var(--gold);z-index:43;pointer-events:none;animation:demo-ripple .55s ease-out forwards}
+@keyframes demo-ripple{from{opacity:.9;scale:.6}to{opacity:0;scale:1.8}}
+.action-dock{grid-template-columns:repeat(4,minmax(0,1fr))}

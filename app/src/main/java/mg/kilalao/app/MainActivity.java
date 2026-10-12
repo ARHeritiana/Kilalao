@@ -52,6 +52,8 @@ public final class MainActivity extends Activity {
         settings.setAllowUniversalAccessFromFileURLs(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
+        // Demo narration chains bundled clips after the tap that starts it; only local assets load.
+        settings.setMediaPlaybackRequiresUserGesture(false);
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface public void checkForUpdates() { runOnUiThread(() -> updater.showMenu()); }
             @JavascriptInterface public String version() { return BuildConfig.VERSION_NAME; }
@@ -68,6 +70,7 @@ public final class MainActivity extends Activity {
                     String mime=URLConnection.guessContentTypeFromName(name);
                     if(name.endsWith(".js")) mime="application/javascript";
                     if(name.endsWith(".css")) mime="text/css";
+                    if(name.endsWith(".ogg")) mime="audio/ogg";
                     if(mime==null) mime="application/octet-stream";
                     Map<String,String> headers=new HashMap<>();
                     headers.put("Cache-Control","no-cache");

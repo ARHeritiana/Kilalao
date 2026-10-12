@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check app/src/main/assets/engines.js && node --check app/src/main/assets/cube3d.js && node --check app/src/main/assets/motion.js && node --check app/src/main/assets/ui.js && node --check app/src/main/assets/updates.js",
+    "check": "node --check app/src/main/assets/engines.js && node --check app/src/main/assets/cube3d.js && node --check app/src/main/assets/motion.js && node --check app/src/main/assets/ui.js && node --check app/src/main/assets/demo.js && node --check app/src/main/assets/demo-text.js && node --check app/src/main/assets/updates.js",
     "test:browser": "playwright test"
   },
   "devDependencies": {

@@ -30,9 +30,12 @@ run('shell', 'input', 'keyevent', '82')
 run('install', '-r', str(root / 'app/build/outputs/apk/debug/app-debug.apk'))
 run('install', '-r', str(root / 'app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'))
 
-def instrument(method):
-    output = run('shell', 'am', 'instrument', '-w', '-e', 'class', 'mg.kilalao.app.UpdateInstallTest#' + method,
+def instrument(method, token=None):
+    extra = ['-e', 'githubToken', token] if token else []
+    output = run('shell', 'am', 'instrument', '-w', *extra, '-e', 'class', 'mg.kilalao.app.UpdateInstallTest#' + method,
                  'mg.kilalao.app.test/androidx.test.runner.AndroidJUnitRunner')
+    if token:
+        output = output.replace(token, '[redacted]')
     print(output, flush=True)
     assert 'OK (1 test)' in output and 'FAILURES' not in output, 'Android test failed'
 
@@ -61,4 +64,6 @@ else:
     raise RuntimeError('Verified release did not replace the baseline')
 
 instrument('verifyAfterReplacement')
+if os.environ.get('KILALAO_VERIFY_PRIVATE_RELEASE') == 'true':
+    instrument('verifyAuthenticatedPrivateReleaseDownload', os.environ['GITHUB_TOKEN'])
 print('PASS: checksum/signature checks, encrypted credentials, installation permission round-trip, Android installer update, saved Hanoi move, favorite and undo history.', flush=True)

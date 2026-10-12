@@ -3,6 +3,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      verify_private_release:
+        description: Also download the latest published private release through the native updater
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -43,6 +48,9 @@ jobs:
         run: sudo chmod 666 /dev/kvm
       - name: Exercise Android permission, installer and progress retention
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          KILALAO_VERIFY_PRIVATE_RELEASE: ${{ inputs.verify_private_release }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           api-level: 30
           target: default

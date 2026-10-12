@@ -1,0 +1,51 @@
+name: Android update installation
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  update-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build the update candidate
+        run: bash ./gradlew --no-daemon assembleDebug
+      - name: Prepare an isolated installer fixture
+        run: |
+          mkdir -p app/src/androidTest/assets release
+          cp app/build/outputs/apk/debug/app-debug.apk app/src/androidTest/assets/candidate.apk
+          python3 - <<'PY'
+          import hashlib, json, os, re, subprocess
+          from pathlib import Path
+          apk = Path('app/src/androidTest/assets/candidate.apk')
+          aapt = Path(os.environ['ANDROID_HOME']) / 'build-tools/35.0.0/aapt'
+          text = subprocess.check_output([str(aapt), 'dump', 'badging', str(apk)], text=True)
+          pkg = re.search(r"package: name='([^']+)' versionCode='(\d+)' versionName='([^']+)'", text)
+          sdk = re.search(r"sdkVersion:'(\d+)'", text)
+          info = dict(applicationId=pkg[1],versionCode=int(pkg[2]),versionName=pkg[3],minSdk=int(sdk[1]),size=apk.stat().st_size,sha256=hashlib.sha256(apk.read_bytes()).hexdigest(),apkUrl=f'https://github.com/ARHeritiana/Kilalao/releases/download/v{pkg[3]}/Kilalao-{pkg[3]}.apk')
+          for path in ['app/src/androidTest/assets/candidate.json','release/update.json']:
+              Path(path).write_text(json.dumps(info))
+          PY
+      - name: Build the older version and signed Android test harness
+        run: bash ./gradlew --no-daemon -PupdateTestBaseline assembleDebug assembleDebugAndroidTest
+      - name: Enable KVM for this disposable runner
+        run: sudo chmod 666 /dev/kvm
+      - name: Exercise Android permission, installer and progress retention
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          disable-animations: true
+          script: python3 scripts/check-update-install.py

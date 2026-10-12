@@ -74,7 +74,8 @@ public class UpdateInstallTest {
         instrumentation.runOnMainSync(()->{try{install.invoke(updater);}catch(Exception e){throw new RuntimeException(e);}});
         UiDevice device=UiDevice.getInstance(instrumentation);
         assertTrue(device.wait(Until.hasObject(By.text("Allow Kilalao updates")),15000));
-        device.findObject(By.text("Open Android settings")).click();
+        androidx.test.uiautomator.UiObject2 settings=device.wait(Until.findObject(By.text(java.util.regex.Pattern.compile("(?i)open android settings"))),15000);
+        assertNotNull("Android settings button is missing",settings);settings.click();
         assertTrue(device.wait(Until.hasObject(By.text("Allow from this source")),15000));
         device.findObject(By.text("Allow from this source")).click();
         device.pressBack();

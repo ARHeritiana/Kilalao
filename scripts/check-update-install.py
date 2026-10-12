@@ -1,5 +1,6 @@
 """Test only on a disposable emulator: real installer replacement, then saved progress."""
 import os
+import atexit
 import json
 from pathlib import Path
 import re
@@ -12,6 +13,18 @@ expected_code = json.loads((root / 'release/update.json').read_text())['versionC
 adb = str(Path(os.environ['ANDROID_HOME']) / 'platform-tools/adb')
 serial = os.environ.get('ANDROID_SERIAL', 'emulator-5554')
 assert serial.startswith('emulator-'), 'This test is restricted to a disposable emulator'
+
+def stop_emulator():
+    # Emulator 37 can hang on the console shutdown command. Bound cleanup and
+    # target only this SDK's disposable emulator process on the selected port.
+    try:
+        subprocess.run([adb, '-s', serial, 'emu', 'kill'], timeout=5, capture_output=True)
+    except subprocess.TimeoutExpired:
+        pass
+    pattern = r'/emulator/qemu/[^ ]+/qemu-system[^ ]*.*-port ' + serial.split('-')[1] + r'( |$)'
+    subprocess.run(['pkill', '-TERM', '-f', pattern], check=False)
+
+atexit.register(stop_emulator)
 
 def run(*args, check=True):
     return subprocess.run([adb, '-s', serial, *args], text=True, capture_output=True, check=check).stdout

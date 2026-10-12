@@ -6,6 +6,9 @@ The updater reads this repository's latest stable GitHub Release and its `update
 
 ## Release activation
 
+The private stable release is 1.2.1 (version code 6), signed with the permanent Kilalao certificate. Version 1.2.1 supports GitHub’s variable-length JWT installation tokens while rejecting whitespace and header-injection characters. See [release validation](RELEASE_VALIDATION.md).
+
+
 The old 1.0.x, 1.1.0 and 1.1.1 APKs used different temporary signing certificates. None of their private signing keys is available in the resumed workspace. Android cannot update these installations with a newly signed release. The updater rejects such mismatches and never instructs the user to uninstall. Keep any installation whose saved progress you need. The first permanent release will require a separate migration decision for old installations; this version does not implement progress export/import.
 
 Before publishing the first stable APK, retain a permanent Java keystore **outside this repository** and configure these repository Actions secrets:

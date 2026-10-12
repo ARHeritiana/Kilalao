@@ -68,7 +68,9 @@ for _ in range(30):
     xml = run('shell', 'cat', '/sdcard/kilalao-installer.xml', check=False)
     try:
         nodes = ET.fromstring(xml).iter('node')
-        button = next((n for n in nodes if n.get('text', '').lower() == 'update' and n.get('clickable') == 'true'), None)
+        button = next((n for n in nodes if n.get('package') == 'com.android.packageinstaller'
+                       and n.get('text', '').lower() in ('update', 'install')
+                       and n.get('clickable') == 'true' and n.get('enabled') == 'true'), None)
     except ET.ParseError:
         button = None
     if button is not None:

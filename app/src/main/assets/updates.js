@@ -1,7 +1,7 @@
 'use strict';
 (() => {
  const native=window.KilalaoUpdates;
- const version=native?native.version():'1.2.0';
+ const version=native?native.version():'1.2.1';
  const header=document.getElementById('app-updates');
  if(header)header.title='Kilalao '+version+' · Check for updates';
  document.addEventListener('click',event=>{

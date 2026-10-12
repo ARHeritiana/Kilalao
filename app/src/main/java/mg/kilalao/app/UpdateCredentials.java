@@ -35,7 +35,7 @@ final class UpdateCredentials {
         return new String(cipher.doFinal(Base64.decode(encrypted, Base64.NO_WRAP)), StandardCharsets.UTF_8);
     }
     void save(String token) throws Exception {
-        if (!token.matches("[A-Za-z0-9_]{20,500}")) throw new IllegalArgumentException("Invalid token format");
+        if (!UpdatePolicy.credentialToken(token)) throw new IllegalArgumentException("Invalid token format");
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding"); cipher.init(Cipher.ENCRYPT_MODE, key());
         String encrypted = Base64.encodeToString(cipher.doFinal(token.getBytes(StandardCharsets.UTF_8)), Base64.NO_WRAP);
         String iv = Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP);

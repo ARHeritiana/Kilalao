@@ -13,6 +13,12 @@ final class UpdatePolicy {
     static final long MAX_APK_BYTES = 64L * 1024 * 1024;
     private UpdatePolicy() {}
 
+    static boolean credentialToken(String token) {
+        // GitHub App tokens now include a variable-length base64url JWT.
+        // Reject whitespace/control characters so credentials cannot inject headers.
+        return token != null && token.matches("[A-Za-z0-9_.-]{20,4096}");
+    }
+
     static boolean releaseAsset(String url) {
         return url != null && url.startsWith(RELEASE_PREFIX) && safeTransport(url);
     }

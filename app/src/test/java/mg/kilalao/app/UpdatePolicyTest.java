@@ -4,6 +4,15 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class UpdatePolicyTest {
+    @Test public void variableLengthTokensAllowJwtButRejectHeaderInjection() {
+        assertTrue(UpdatePolicy.credentialToken("github_pat_AndroidOnlyTestFixture000001"));
+        assertTrue(UpdatePolicy.credentialToken("ghs_1_" + "abc-def_".repeat(100) + ".payload.signature"));
+        assertFalse(UpdatePolicy.credentialToken(null));
+        assertFalse(UpdatePolicy.credentialToken("short"));
+        assertFalse(UpdatePolicy.credentialToken("a".repeat(4097)));
+        assertFalse(UpdatePolicy.credentialToken("a".repeat(25) + "\r\nX-Test: injected"));
+        assertFalse(UpdatePolicy.credentialToken("a".repeat(25) + " space"));
+    }
     private String metadata() {
         return "{\"applicationId\":\"mg.kilalao.app\",\"versionCode\":6,\"versionName\":\"1.2.1\",\"minSdk\":26,\"size\":100000,\"sha256\":\"" + "a".repeat(64)
             + "\",\"apkUrl\":\"" + UpdatePolicy.RELEASE_PREFIX + "v1.2.1/Kilalao-1.2.1.apk\"}";

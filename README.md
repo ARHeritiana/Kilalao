@@ -4,7 +4,7 @@ An offline Android app with **24 mathematical and logic game families**, touch c
 
 ## Install
 
-Download **[Kilalao-1.2.0.apk](https://github.com/ARHeritiana/Kilalao/releases/download/v1.2.0/Kilalao-1.2.0.apk)** from the private [1.2.0 release](https://github.com/ARHeritiana/Kilalao/releases/tag/v1.2.0), open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later**. This APK uses the permanent Kilalao release signing certificate; it is not a Google Play release.
+Download **[Kilalao-1.2.1.apk](https://github.com/ARHeritiana/Kilalao/releases/download/v1.2.1/Kilalao-1.2.1.apk)** from the private [1.2.1 release](https://github.com/ARHeritiana/Kilalao/releases/tag/v1.2.1), open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later**. This APK uses the permanent Kilalao release signing certificate; it is not a Google Play release.
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app uses internet access only for optional GitHub update checks/downloads and asks Android for permission to install a verified update. It contains no analytics or advertisements and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
 
@@ -16,7 +16,7 @@ The phone interface has a compact game header, full-width boards, separate Play/
 
 ## Updates in 1.2.0
 
-The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; future release builds require the permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The signed 1.2.0 release includes this updater. Pending downloads survive the Android installation-permission restart and are verified again before installation.
+The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; future release builds require the permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The signed 1.2.1 release includes this updater and supports GitHub’s longer JWT installation tokens. Pending downloads survive the Android installation-permission restart and are verified again before installation.
 
 ## Games
 

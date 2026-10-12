@@ -30,14 +30,14 @@ test('Cube renders in 3D, animates turns, orbits, and keeps controls reachable',
  await page.setViewportSize({width:390,height:844});await page.goto('/#game/rubik');
  await expect(page.locator('[data-cubie]')).toHaveCount(26);
  expect(await page.locator('.cube-view').evaluate(el=>getComputedStyle(el).transformStyle)).toBe('preserve-3d');
- await page.locator('[data-cube-face="R"]').click();await page.locator('[data-turn="1"]').click();
+ await page.locator('.cube-rail [data-face="R"]').click();
  expect(await page.locator('.cubie-orbit').evaluateAll(els=>els.filter(el=>el.getAnimations().length>0).length)).toBe(9);
  await page.waitForTimeout(350);
  const scene=page.locator('#cube-scene'),r=await scene.boundingBox();
  await page.mouse.move(r.x+r.width/2,r.y+r.height/2);await page.mouse.down();await page.mouse.move(r.x+r.width/2+60,r.y+r.height/2+20);await page.mouse.up();
  await expect(page.locator('.cube-view')).not.toHaveCSS('transform','matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)');
  await page.locator('#cube-reset').click();
- const turns=await page.locator('.cube-turn-controls').boundingBox(),dock=await page.locator('.action-dock').boundingBox();
+ const turns=await page.locator('.cube-rail').boundingBox(),dock=await page.locator('.action-dock').boundingBox();
  expect(turns.y+turns.height).toBeLessThanOrEqual(dock.y);
 });
 test('Move animation and reduced motion work in a real browser',async({page})=>{
@@ -59,7 +59,7 @@ test('Learning URL survives reload and browser Back, and Android Back returns to
 test('Short phones and landscape keep cube and puzzle controls scrollable above the dock',async({page})=>{
  for(const viewport of [{width:320,height:568},{width:844,height:390}]){
   await page.setViewportSize(viewport);
-  for(const [id,selector] of [['rubik','.cube-turn-controls'],['sudoku','.number-pad'],['sliding','.controls']]){
+  for(const [id,selector] of [['rubik','.cube-rail'],['sudoku','.number-pad'],['sliding','.controls']]){
    await page.goto('/#game/'+id);if(id==='sliding')await page.locator('#mode').selectOption('Klotski');
    const control=page.locator(selector);await control.scrollIntoViewIfNeeded();
    const r=await control.boundingBox(),dock=await page.locator('.action-dock').boundingBox();
@@ -86,11 +86,11 @@ test('Updates remains reachable on a small phone and preserves the current game'
 
 test('River boat and passengers cross together; peg captures fade; unsafe moves shake',async({page})=>{
  await page.setViewportSize({width:390,height:844});await page.goto('/#game/river');
- await page.locator('[data-cargo="-1"]').click();
+ await page.locator('.boat-hull').click();
  expect(await page.locator('#boardarea').evaluate(el=>el.getAnimations().length)).toBe(1);
  await expect(page.locator('.game-status')).toContainText('0 moves');
  const boat=await page.locator('[data-motion="boat"]').boundingBox();
- await page.locator('[data-cargo="2"]').click();
+ await page.locator('[data-board="goat"]').click();await page.waitForTimeout(400);await page.locator('.boat-hull').click();
  await page.evaluate(()=>document.getAnimations().forEach(a=>{a.pause();a.currentTime=a.effect.getComputedTiming().duration/2;}));
  const goat=await page.locator('[data-motion="goat"]').boundingBox(),moving=await page.locator('[data-motion="boat"]').boundingBox();
  expect(moving.x).toBeGreaterThan(boat.x+10);const centre=goat.x+goat.width/2;expect(centre).toBeGreaterThan(moving.x);expect(centre).toBeLessThan(moving.x+moving.width);
@@ -98,4 +98,20 @@ test('River boat and passengers cross together; peg captures fade; unsafe moves 
  const [from,to]=await page.evaluate(()=>{for(let f=0;f<current.cells.length;f++)for(let t=0;t<current.cells.length;t++)if(E.move(current,{from:f,to:t}).ok)return[f,t];});
  await page.locator(`[data-hole="${from}"]`).click();await page.locator(`[data-hole="${to}"]`).click();
  await expect(page.locator('.motion-ghost')).toHaveCount(1);
+});
+
+test('Cube camera maths matches the browser, and a real finger swipe turns a row',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto('/#game/rubik');
+ const err=await page.evaluate(()=>{let worst=0;for(const v of [{x:-25,y:-35},{x:40,y:120},{x:-70,y:250}]){Cube3D.setView(v);const m=new DOMMatrix(`rotateX(${v.x}deg) rotateY(${v.y}deg)`);for(const d of [[1,0,0],[0,1,0],[0,0,1],[1,-1,.5]]){const p=m.transformPoint(new DOMPoint(d[0],-d[1],d[2])),q=Cube3D.project(d);worst=Math.max(worst,Math.abs(p.x-q[0]),Math.abs(p.y-q[1]));}}Cube3D.setView({x:-25,y:-35});return worst;});
+ expect(err).toBeLessThan(1e-9);
+ await page.evaluate(()=>renderGame());
+ const sticker=page.locator('[data-cubie="1,1,1"] [data-sticker-face="F"]'),box=await sticker.boundingBox();
+ await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2,box.y-40,{steps:5});await page.mouse.up();
+ await expect(page.locator('.game-status')).toContainText('1 move');
+ expect(await page.evaluate(()=>JSON.stringify(current.trail[current.trail.length-1]))).toBe('["R",1]');
+ const view=await page.locator('.cube-view').getAttribute('style');
+ const scene=await page.locator('#cube-scene').boundingBox();
+ await page.mouse.move(scene.x+12,scene.y+12);await page.mouse.down();await page.mouse.move(scene.x+70,scene.y+30,{steps:4});await page.mouse.up();
+ expect(await page.locator('.cube-view').getAttribute('style')).not.toBe(view);
+ await expect(page.locator('.game-status')).toContainText('1 move');
 });

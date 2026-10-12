@@ -38,12 +38,24 @@ final class AppUpdater {
     private volatile boolean closed;
     private volatile HttpURLConnection activeConnection;
     private AlertDialog progress;
-    private File ready;
+    private volatile File ready;
+    private volatile ReleaseInfo pendingInfo;
     private final UpdateCredentials credentials;
     private String downloadUrl;
     private static final class AccessRequired extends Exception {}
 
-    AppUpdater(Activity activity) { this.activity = activity; credentials = new UpdateCredentials(activity); }
+    AppUpdater(Activity activity) {
+        this.activity = activity; credentials = new UpdateCredentials(activity);
+        try {
+            File metadata = pendingMetadata();
+            if (metadata.isFile() && metadata.length() <= 16384) {
+                String json = new String(java.nio.file.Files.readAllBytes(metadata.toPath()), StandardCharsets.UTF_8);
+                pendingInfo = new ReleaseInfo(json);
+                if (pendingInfo.code > installedCode()) ready = UpdateApkProvider.file(activity);
+                else clearPending();
+            }
+        } catch (Exception e) { clearPending(); }
+    }
 
     void showMenu() {
         if (!closed) new AlertDialog.Builder(activity).setTitle("Kilalao " + BuildConfig.VERSION_NAME)
@@ -54,6 +66,7 @@ final class AppUpdater {
 
     void check(boolean manual) {
         if (closed) return;
+        if (ready != null) { if (manual) install(); return; }
         long last = activity.getPreferences(0).getLong("update-check", 0);
         if (!manual && System.currentTimeMillis() - last < 24L*60*60*1000) return;
         if (!busy.compareAndSet(false, true)) { if (manual) toast("An update check or download is already running."); return; }
@@ -108,6 +121,7 @@ final class AppUpdater {
             .setCancelable(false).show();
         worker.execute(() -> {
             File partial = new File(activity.getFilesDir(), "update.part");
+            boolean staged = false;
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 long bytes;
@@ -122,13 +136,14 @@ final class AppUpdater {
                 File target = UpdateApkProvider.file(activity);
                 if (target.exists() && !target.delete()) throw new Exception("Could not replace previous update");
                 if (!partial.renameTo(target)) throw new Exception("Could not save verified update");
-                ready = target;
-                ui(this::install);
+                rememberPending(info);
+                staged = true;
             } catch (Exception e) { toast("The update could not be downloaded or verified. Your saved games are unchanged. Try again later."); }
             finally {
                 if (partial.exists()) partial.delete();
                 busy.set(false);
                 ui(() -> { if (progress != null) { progress.dismiss(); progress = null; } });
+                if (staged) ui(this::install);
             }
         });
     }
@@ -150,6 +165,20 @@ final class AppUpdater {
             && info.minSdk <= Build.VERSION.SDK_INT && UpdatePolicy.sameSigners(signers(installed), signers(apk));
     }
 
+    private File pendingMetadata() { return new File(activity.getFilesDir(), "pending-update.json"); }
+
+    void rememberPending(ReleaseInfo info) throws Exception {
+        try (FileOutputStream out = new FileOutputStream(pendingMetadata())) {
+            out.write(info.json.getBytes(StandardCharsets.UTF_8)); out.getFD().sync();
+        }
+        pendingInfo = info; ready = UpdateApkProvider.file(activity);
+    }
+
+    private void clearPending() {
+        pendingMetadata().delete(); UpdateApkProvider.file(activity).delete();
+        pendingInfo = null; ready = null;
+    }
+
     private void install() {
         if (ready == null || !ready.isFile()) return;
         if (!activity.getPackageManager().canRequestPackageInstalls()) {
@@ -161,6 +190,21 @@ final class AppUpdater {
                 }).setNegativeButton("Later", null).show();
             return;
         }
+        if (closed || !busy.compareAndSet(false, true)) return;
+        File candidate = ready; ReleaseInfo info = pendingInfo;
+        worker.execute(() -> {
+            try {
+                if (info == null || !verifyCandidate(candidate, info)) {
+                    clearPending(); toast("The saved update could not be verified. Please check for updates again.");
+                    return;
+                }
+                ui(this::openInstaller);
+            } catch (Exception e) { clearPending(); toast("The saved update could not be verified. Please check for updates again."); }
+            finally { busy.set(false); }
+        });
+    }
+
+    private void openInstaller() {
         Uri uri = UpdateApkProvider.uri();
         Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

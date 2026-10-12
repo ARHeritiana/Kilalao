@@ -5,9 +5,10 @@ import org.json.JSONObject;
 final class ReleaseInfo {
     final int code, minSdk;
     final long size;
-    final String version, apk, sha256;
+    final String version, apk, sha256, json;
 
     ReleaseInfo(String json) throws Exception {
+        this.json = json;
         JSONObject o = new JSONObject(json);
         code = o.getInt("versionCode");
         minSdk = o.getInt("minSdk");

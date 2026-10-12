@@ -37,9 +37,29 @@ def instrument(method, token=None):
     if token:
         output = output.replace(token, '[redacted]')
     print(output, flush=True)
+    if 'OK (1 test)' not in output:
+        log = run('logcat', '-d', '-t', '150', 'AndroidRuntime:E', '*:S', check=False)
+        print(log.replace(token, '[redacted]') if token else log, flush=True)
     assert 'OK (1 test)' in output and 'FAILURES' not in output, 'Android test failed'
 
 instrument('prepareInstallerAndPermissionRoundTrip')
+for _ in range(15):
+    run('shell', 'uiautomator', 'dump', '/sdcard/kilalao-settings.xml', check=False)
+    xml = run('shell', 'cat', '/sdcard/kilalao-settings.xml', check=False)
+    try:
+        switch = next((n for n in ET.fromstring(xml).iter('node') if n.get('class') == 'android.widget.Switch' and n.get('clickable') == 'true'), None)
+    except ET.ParseError:
+        switch = None
+    if switch is not None:
+        if switch.get('checked') != 'true':
+            bounds = list(map(int, re.findall(r'\d+', switch.get('bounds'))))
+            run('shell', 'input', 'tap', str((bounds[0]+bounds[2])//2), str((bounds[1]+bounds[3])//2))
+        break
+    time.sleep(1)
+else:
+    raise RuntimeError('Android installation permission switch was not shown')
+run('shell', 'input', 'keyevent', '4')
+run('shell', 'am', 'start', '-W', '-n', 'mg.kilalao.app/.MainActivity')
 for _ in range(30):
     run('shell', 'uiautomator', 'dump', '/sdcard/kilalao-installer.xml', check=False)
     xml = run('shell', 'cat', '/sdcard/kilalao-installer.xml', check=False)

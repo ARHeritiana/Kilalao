@@ -69,7 +69,7 @@ public class UpdateInstallTest {
         assertTrue("Signed release failed the real APK checks",updater.verifyCandidate(apk,info));
         ReleaseInfo bad=new ReleaseInfo(json.replace(info.sha256,new String(new char[64]).replace('\0','0')));
         assertFalse("Corrupt checksum passed",updater.verifyCandidate(apk,bad));
-        Field ready=AppUpdater.class.getDeclaredField("ready");ready.setAccessible(true);ready.set(updater,apk);
+        updater.rememberPending(info);
         Method install=AppUpdater.class.getDeclaredMethod("install");install.setAccessible(true);
         instrumentation.runOnMainSync(()->{try{install.invoke(updater);}catch(Exception e){throw new RuntimeException(e);}});
         UiDevice device=UiDevice.getInstance(instrumentation);
@@ -77,10 +77,8 @@ public class UpdateInstallTest {
         androidx.test.uiautomator.UiObject2 settings=device.wait(Until.findObject(By.text(java.util.regex.Pattern.compile("(?i)open android settings"))),15000);
         assertNotNull("Android settings button is missing",settings);settings.click();
         assertTrue(device.wait(Until.hasObject(By.text("Allow from this source")),15000));
-        device.findObject(By.text("Allow from this source")).click();
-        device.pressBack();
-        assertTrue("Installer did not receive the verified APK",device.wait(Until.hasObject(By.text(java.util.regex.Pattern.compile("(?i)update"))),15000));
-        // The host clicks Update after this instrumentation completes, so replacement cannot kill the test runner.
+        // Changing this permission can kill the app. The host completes the round-trip
+        // after instrumentation exits, then tests pending-update recovery on restart.
     }
     @Test public void verifyAfterReplacement() throws Exception {
         PackageInfo installed=instrumentation.getTargetContext().getPackageManager().getPackageInfo("mg.kilalao.app",0);

@@ -43,11 +43,12 @@ def instrument(method, token=None):
     assert 'OK (1 test)' in output and 'FAILURES' not in output, 'Android test failed'
 
 instrument('prepareInstallerAndPermissionRoundTrip')
+run('shell', 'am', 'start', '-W', '-a', 'android.settings.MANAGE_UNKNOWN_APP_SOURCES', '-d', 'package:mg.kilalao.app')
 for _ in range(15):
     run('shell', 'uiautomator', 'dump', '/sdcard/kilalao-settings.xml', check=False)
     xml = run('shell', 'cat', '/sdcard/kilalao-settings.xml', check=False)
     try:
-        switch = next((n for n in ET.fromstring(xml).iter('node') if n.get('class') == 'android.widget.Switch' and n.get('clickable') == 'true'), None)
+        switch = next((n for n in ET.fromstring(xml).iter('node') if 'Switch' in n.get('class', '')), None)
     except ET.ParseError:
         switch = None
     if switch is not None:
@@ -57,8 +58,10 @@ for _ in range(15):
         break
     time.sleep(1)
 else:
+    print(xml, flush=True)
     raise RuntimeError('Android installation permission switch was not shown')
 run('shell', 'input', 'keyevent', '4')
+run('shell', 'am', 'force-stop', 'mg.kilalao.app')
 run('shell', 'am', 'start', '-W', '-n', 'mg.kilalao.app/.MainActivity')
 for _ in range(30):
     run('shell', 'uiautomator', 'dump', '/sdcard/kilalao-installer.xml', check=False)
@@ -74,6 +77,8 @@ for _ in range(30):
         break
     time.sleep(1)
 else:
+    print(xml, flush=True)
+    print(run('logcat', '-d', '-t', '150', 'AndroidRuntime:E', '*:S', check=False), flush=True)
     raise RuntimeError('Android installer confirmation was not shown')
 
 for _ in range(60):

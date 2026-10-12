@@ -12,3 +12,4 @@ test-results/
 playwright-report/
 screenshots/
 release/
+app/src/androidTest/assets/

@@ -25,6 +25,15 @@ public class UpdatePolicyTest {
         assertFalse(UpdatePolicy.sameSigners(null, new String[]{"A"}));
         assertFalse(UpdatePolicy.sameSigners(new String[0], new String[0]));
     }
+    @Test public void privateCredentialsStayOnExactRepositoryApiEndpoints() {
+        assertTrue(UpdatePolicy.apiAsset(UpdatePolicy.API_PREFIX + "releases/assets/42"));
+        assertTrue(UpdatePolicy.credentialDestination(UpdatePolicy.API_PREFIX + "releases/latest"));
+        assertTrue(UpdatePolicy.credentialDestination(UpdatePolicy.API_PREFIX + "releases/assets/42"));
+        assertFalse(UpdatePolicy.apiAsset(UpdatePolicy.API_PREFIX + "releases/assets/42?redirect=evil"));
+        assertFalse(UpdatePolicy.credentialDestination("https://api.github.com/repos/other/private/releases/latest"));
+        assertFalse(UpdatePolicy.credentialDestination("https://release-assets.githubusercontent.com/asset"));
+        assertFalse(UpdatePolicy.credentialDestination(UpdatePolicy.RELEASE_PREFIX + "v1.2.0/Kilalao.apk"));
+    }
     @Test public void validMetadataParses() throws Exception {
         ReleaseInfo info = new ReleaseInfo(metadata());
         assertEquals(6, info.code); assertEquals("1.2.1", info.version); assertEquals(100000, info.size);

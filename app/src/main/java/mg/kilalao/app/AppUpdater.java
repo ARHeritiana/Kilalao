@@ -12,6 +12,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.widget.Toast;
+import android.widget.EditText;
+import android.text.InputType;
+import android.view.View;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
@@ -36,8 +39,18 @@ final class AppUpdater {
     private volatile HttpURLConnection activeConnection;
     private AlertDialog progress;
     private File ready;
+    private final UpdateCredentials credentials;
+    private String downloadUrl;
+    private static final class AccessRequired extends Exception {}
 
-    AppUpdater(Activity activity) { this.activity = activity; }
+    AppUpdater(Activity activity) { this.activity = activity; credentials = new UpdateCredentials(activity); }
+
+    void showMenu() {
+        if (!closed) new AlertDialog.Builder(activity).setTitle("Kilalao " + BuildConfig.VERSION_NAME)
+            .setItems(new String[]{"Check for updates", "Private update access"}, (d,which) -> {
+                if (which == 0) check(true); else manageAccess();
+            }).setNegativeButton("Close", null).show();
+    }
 
     void check(boolean manual) {
         if (closed) return;
@@ -54,12 +67,22 @@ final class AppUpdater {
                     if (release.optBoolean("draft") || release.optBoolean("prerelease")) throw new Exception("Not a stable release");
                     JSONArray assets = release.getJSONArray("assets");
                     String metadata = null;
+                    String apkAsset = null;
                     for (int i=0; i<assets.length(); i++) {
                         JSONObject asset = assets.getJSONObject(i);
-                        if ("update.json".equals(asset.getString("name"))) metadata = asset.getString("browser_download_url");
+                        if ("update.json".equals(asset.getString("name"))) metadata = asset.getString("url");
                     }
-                    if (!UpdatePolicy.releaseAsset(metadata)) throw new Exception("No verified update metadata");
+                    if (!UpdatePolicy.apiAsset(metadata)) throw new Exception("No verified update metadata");
                     info = new ReleaseInfo(text(metadata, 16384));
+                    for (int i=0; i<assets.length(); i++) {
+                        JSONObject asset = assets.getJSONObject(i);
+                        if (info.apk.equals(asset.getString("browser_download_url"))) apkAsset = asset.getString("url");
+                    }
+                    if (!UpdatePolicy.apiAsset(apkAsset)) throw new Exception("APK is missing from this release");
+                    downloadUrl = apkAsset;
+                } else {
+                    // GitHub deliberately returns 404 for inaccessible private repositories.
+                    text(UpdatePolicy.API_PREFIX.substring(0,UpdatePolicy.API_PREFIX.length()-1), 65536);
                 }
                 activity.getPreferences(0).edit().putLong("update-check", System.currentTimeMillis()).apply();
                 if (info != null && info.code > installedCode()) {
@@ -72,7 +95,8 @@ final class AppUpdater {
                             .setNegativeButton("Later", null).show();
                     });
                 } else if (manual) toast(info == null ? "No published update is available yet." : "Kilalao is up to date.");
-            } catch (Exception e) { if (manual) toast("Could not check for updates. Check your internet connection and try again."); }
+            } catch (AccessRequired e) { if (manual) ui(this::connectPrivateUpdates); }
+            catch (Exception e) { if (manual) toast("Could not check for updates. Check your internet connection and try again."); }
             finally { busy.set(false); }
         });
     }
@@ -87,14 +111,9 @@ final class AppUpdater {
             try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 long bytes;
-                try (OutputStream out = new FileOutputStream(partial)) { bytes = transfer(info.apk, info.size, out, digest, false); }
+                try (OutputStream out = new FileOutputStream(partial)) { bytes = transfer(downloadUrl, info.size, out, digest, false); }
                 if (bytes != info.size || !info.sha256.equals(hex(digest.digest()))) throw new Exception("Checksum mismatch");
-                PackageManager pm = activity.getPackageManager();
-                PackageInfo apk = pm.getPackageArchiveInfo(partial.getAbsolutePath(), signatureFlags());
-                PackageInfo installed = pm.getPackageInfo(activity.getPackageName(), signatureFlags());
-                if (apk == null || !activity.getPackageName().equals(apk.packageName) || versionCode(apk) != info.code
-                    || !info.version.equals(apk.versionName) || versionCode(apk) <= versionCode(installed)
-                    || !UpdatePolicy.sameSigners(signers(installed), signers(apk))) {
+                if (!verifyCandidate(partial, info)) {
                     ui(() -> new AlertDialog.Builder(activity).setTitle("This update cannot be installed safely")
                         .setMessage("The downloaded app does not match this installation's version or signing certificate. Keep this installation to preserve your saved progress. Older development builds may use a different certificate.")
                         .setPositiveButton("OK", null).show());
@@ -112,6 +131,23 @@ final class AppUpdater {
                 ui(() -> { if (progress != null) { progress.dismiss(); progress = null; } });
             }
         });
+    }
+
+    boolean verifyCandidate(File file, ReleaseInfo info) throws Exception {
+        if (!file.isFile() || file.length() != info.size) return false;
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream in = new java.io.FileInputStream(file)) {
+            byte[] buffer = new byte[8192]; int n;
+            while ((n=in.read(buffer)) != -1) digest.update(buffer,0,n);
+        }
+        if (!info.sha256.equals(hex(digest.digest()))) return false;
+        PackageManager pm = activity.getPackageManager();
+        PackageInfo apk = pm.getPackageArchiveInfo(file.getAbsolutePath(), signatureFlags());
+        PackageInfo installed = pm.getPackageInfo(activity.getPackageName(), signatureFlags());
+        return apk != null && activity.getPackageName().equals(apk.packageName) && versionCode(apk) == info.code
+            && info.version.equals(apk.versionName) && versionCode(apk) > versionCode(installed)
+            && apk.applicationInfo != null && apk.applicationInfo.minSdkVersion == info.minSdk
+            && info.minSdk <= Build.VERSION.SDK_INT && UpdatePolicy.sameSigners(signers(installed), signers(apk));
     }
 
     private void install() {
@@ -152,10 +188,18 @@ final class AppUpdater {
             HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
             activeConnection = conn;
             conn.setInstanceFollowRedirects(false); conn.setConnectTimeout(15000); conn.setReadTimeout(20000);
-            conn.setRequestProperty("User-Agent", "Kilalao-Android"); conn.setRequestProperty("Accept", "application/vnd.github+json");
+            conn.setRequestProperty("User-Agent", "Kilalao-Android");
+            conn.setRequestProperty("Accept", UpdatePolicy.apiAsset(url) ? "application/octet-stream" : "application/vnd.github+json");
+            conn.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
+            // Never forward the credential to GitHub's CDN or any redirected host/path.
             try {
+                if (UpdatePolicy.credentialDestination(url)) {
+                    String token = credentials.read();
+                    if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
+                }
                 int status = conn.getResponseCode();
                 if (status == 404 && allowNotFound && redirect == 0) return -1;
+                if ((status == 401 || status == 403 || status == 404) && UpdatePolicy.credentialDestination(url)) throw new AccessRequired();
                 if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
                     String location = conn.getHeaderField("Location");
                     if (location == null) throw new Exception("Missing redirect");
@@ -175,6 +219,23 @@ final class AppUpdater {
         }
         throw new Exception("Too many redirects");
     }
+
+    private void connectPrivateUpdates() {
+        EditText input = new EditText(activity);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+        input.setHint("GitHub fine-grained access token");
+        new AlertDialog.Builder(activity).setTitle("Connect private updates")
+            .setMessage("This repository is private. Enter a GitHub fine-grained token limited to ARHeritiana/Kilalao with Contents: read-only. It is encrypted on this device and sent only to GitHub's API. Never enter your GitHub password here.")
+            .setView(input).setPositiveButton("Connect", (d,w) -> {
+                try { credentials.save(input.getText().toString().trim()); activity.getPreferences(0).edit().remove("update-check").apply(); check(true); }
+                catch (Exception e) { toast("Could not save update access. Use a valid fine-grained GitHub token."); }
+                input.setText("");
+            }).setNeutralButton("Remove saved access", (d,w) -> { credentials.clear(); toast("Private update access removed from this device."); })
+            .setNegativeButton("Cancel", (d,w) -> input.setText("")).show();
+    }
+
+    void manageAccess() { if (!closed) connectPrivateUpdates(); }
 
     @SuppressWarnings("deprecation")
     private static int signatureFlags() { return Build.VERSION.SDK_INT >= 28 ? PackageManager.GET_SIGNING_CERTIFICATES : PackageManager.GET_SIGNATURES; }

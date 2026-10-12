@@ -16,7 +16,7 @@ The phone interface has a compact game header, full-width boards, separate Play/
 
 ## Updates in 1.2.0
 
-The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Publishing installable updates requires a public repository and a permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The bundled 1.1.1 APK predates this updater; the 1.2.0 source is built by Actions.
+The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; release builds use a permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The bundled 1.1.1 APK predates this updater; the 1.2.0 source is built by Actions.
 
 ## Games
 
@@ -92,7 +92,7 @@ The GitHub Actions workflow runs these checks, builds the Android APK, and uploa
 - `tests/engines.test.js`: game correctness tests.
 - `tests/ui.test.js`: DOM interaction checks for navigation, saved games, controls, and drawing gestures. These are not a substitute for testing on an Android device.
 
-No API key, server, OpenAI API usage, or paid service is required. The Android app bundles all its assets. Its local WebView cannot read arbitrary files or load remote content.
+No OpenAI API key, server, OpenAI API usage, or paid service is required. Games work offline; optional private updates require a read-only GitHub access token. The Android app bundles all its assets. Its local WebView cannot read arbitrary files or load remote content.
 
 ## Attribution
 

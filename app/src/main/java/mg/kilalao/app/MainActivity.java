@@ -53,8 +53,9 @@ public final class MainActivity extends Activity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
         web.addJavascriptInterface(new Object() {
-            @JavascriptInterface public void checkForUpdates() { runOnUiThread(() -> updater.check(true)); }
+            @JavascriptInterface public void checkForUpdates() { runOnUiThread(() -> updater.showMenu()); }
             @JavascriptInterface public String version() { return BuildConfig.VERSION_NAME; }
+            @JavascriptInterface public void manageUpdateAccess() { runOnUiThread(() -> updater.manageAccess()); }
         }, "KilalaoUpdates");
         web.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {

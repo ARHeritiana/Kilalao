@@ -8,6 +8,7 @@ android {
         targetSdk 35
         versionCode 5
         versionName '1.2.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_11; targetCompatibility JavaVersion.VERSION_11 }
     buildFeatures { buildConfig true }
@@ -21,9 +22,24 @@ android {
             }
         }
     }
-    buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+    buildTypes {
+        debug {
+            if (System.getenv('KILALAO_KEYSTORE_PATH')) signingConfig signingConfigs.release
+        }
+        release { minifyEnabled false; signingConfig signingConfigs.release }
+    }
+    // Only Android installation tests use a lower debug version to exercise replacement.
+    if (project.hasProperty('updateTestBaseline')) {
+        androidComponents.onVariants(androidComponents.selector().withBuildType('debug')) { variant ->
+            variant.outputs.each { output -> output.versionCode.set(defaultConfig.versionCode - 1) }
+        }
+    }
 }
 dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20240303'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
 }

@@ -46,6 +46,26 @@ jobs:
         run: bash ./gradlew --no-daemon testDebugUnitTest assembleRelease lintRelease
       - name: Verify the signed APK and prepare update metadata
         run: python3 scripts/prepare-release.py
+      - name: Build the older install baseline and Android update tests
+        env:
+          KILALAO_KEYSTORE_PATH: ${{ runner.temp }}/kilalao-release.jks
+          KILALAO_STORE_PASSWORD: ${{ secrets.KILALAO_STORE_PASSWORD }}
+          KILALAO_KEY_ALIAS: ${{ secrets.KILALAO_KEY_ALIAS }}
+          KILALAO_KEY_PASSWORD: ${{ secrets.KILALAO_KEY_PASSWORD }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          mkdir -p app/src/androidTest/assets
+          cp "release/Kilalao-$version.apk" app/src/androidTest/assets/candidate.apk
+          cp release/update.json app/src/androidTest/assets/candidate.json
+          bash ./gradlew --no-daemon -PupdateTestBaseline assembleDebug assembleDebugAndroidTest
+      - name: Verify Android installation and progress retention
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          disable-animations: true
+          script: python3 scripts/check-update-install.py
       - name: Publish the tested update from main
         env:
           GH_TOKEN: ${{ github.token }}

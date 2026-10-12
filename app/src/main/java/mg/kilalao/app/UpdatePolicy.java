@@ -9,11 +9,20 @@ import java.util.Set;
 final class UpdatePolicy {
     static final String REPOSITORY = "ARHeritiana/Kilalao";
     static final String RELEASE_PREFIX = "https://github.com/" + REPOSITORY + "/releases/download/";
+    static final String API_PREFIX = "https://api.github.com/repos/" + REPOSITORY + "/";
     static final long MAX_APK_BYTES = 64L * 1024 * 1024;
     private UpdatePolicy() {}
 
     static boolean releaseAsset(String url) {
         return url != null && url.startsWith(RELEASE_PREFIX) && safeTransport(url);
+    }
+
+    static boolean apiAsset(String url) {
+        return url != null && url.matches(java.util.regex.Pattern.quote(API_PREFIX + "releases/assets/") + "[1-9][0-9]*");
+    }
+
+    static boolean credentialDestination(String url) {
+        return API_PREFIX.concat("releases/latest").equals(url) || API_PREFIX.substring(0,API_PREFIX.length()-1).equals(url) || apiAsset(url);
     }
 
     static boolean safeTransport(String url) {

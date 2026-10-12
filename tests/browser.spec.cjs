@@ -83,3 +83,19 @@ test('Updates remains reachable on a small phone and preserves the current game'
  await update.click();await expect(page.locator('#toast')).toContainText('Android app');
  await expect(page.locator('.game-status')).toContainText('1 move');
 });
+
+test('River boat and passengers cross together; peg captures fade; unsafe moves shake',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto('/#game/river');
+ await page.locator('[data-cargo="-1"]').click();
+ expect(await page.locator('#boardarea').evaluate(el=>el.getAnimations().length)).toBe(1);
+ await expect(page.locator('.game-status')).toContainText('0 moves');
+ const boat=await page.locator('[data-motion="boat"]').boundingBox();
+ await page.locator('[data-cargo="2"]').click();
+ await page.evaluate(()=>document.getAnimations().forEach(a=>{a.pause();a.currentTime=a.effect.getComputedTiming().duration/2;}));
+ const goat=await page.locator('[data-motion="goat"]').boundingBox(),moving=await page.locator('[data-motion="boat"]').boundingBox();
+ expect(moving.x).toBeGreaterThan(boat.x+10);const centre=goat.x+goat.width/2;expect(centre).toBeGreaterThan(moving.x);expect(centre).toBeLessThan(moving.x+moving.width);
+ await page.goto('/#game/peg');
+ const [from,to]=await page.evaluate(()=>{for(let f=0;f<current.cells.length;f++)for(let t=0;t<current.cells.length;t++)if(E.move(current,{from:f,to:t}).ok)return[f,t];});
+ await page.locator(`[data-hole="${from}"]`).click();await page.locator(`[data-hole="${to}"]`).click();
+ await expect(page.locator('.motion-ghost')).toHaveCount(1);
+});

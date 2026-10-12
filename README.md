@@ -14,6 +14,10 @@ The phone interface has a compact game header, full-width boards, separate Play/
 
 **Installation over an older build:** the permanent 1.2.0 signing certificate differs from the temporary 1.0.x/1.1.x development certificates. Android cannot update those installations in place. Uninstalling an older installation deletes its saved games and progress; keep it if those saves matter. Future compatible releases use the same permanent key and preserve progress. See [release validation](RELEASE_VALIDATION.md).
 
+## Motion and interface polish (unreleased)
+
+River crossing now has an illustrated scene: two banks, a flowing river, and a boat that carries the chosen passengers across before they step onto the far bank (both puzzles). Hanoi disks lift clear of the pegs, carry across, and lower; a selected peg raises its top disk. Peg and frog jumps arc, captured pieces fade, and changed cells cross-fade their colors instead of flashing. A second tap during an animation continues from the on-screen position, SVG boards animate at the correct scale, unsafe moves gently shake the board, and a solved puzzle ends with a short celebration. Selections, toasts and screen changes transition smoothly. Reduced-motion settings still disable all of this.
+
 ## Updates in 1.2.0
 
 The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; future release builds require the permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The signed 1.2.1 release includes this updater and supports GitHub’s longer JWT installation tokens. Pending downloads survive the Android installation-permission restart and are verified again before installation.

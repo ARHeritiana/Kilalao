@@ -2,13 +2,13 @@
 
 Kilalao 1.2.0 adds an **Updates** button in the app header and a startup check at most once every 24 hours after a successful check. Games and learning remain offline. Private releases are supported with a device-local GitHub fine-grained token limited to this repository and Contents: read-only. Choose **Updates → Private update access** to connect or remove it. Android Keystore encrypts the token; neither JavaScript nor the APK contains it. It is sent only to exact GitHub API endpoints for this repository, never to redirected CDN hosts. Only the native updater contacts GitHub; the game WebView still cannot load remote scripts or make network requests. Failed automatic checks are silent; the button reports errors and can retry immediately.
 
-The updater reads this repository's latest stable GitHub Release and its `update.json` asset. It offers a newer compatible Android version, downloads only after the user agrees, verifies the exact byte count and SHA-256, and checks application ID, version code/name, and all signing certificates against the installed app. HTTP and unknown download/redirect hosts are rejected. Downloads are bounded to 64 MiB. Android then asks the user to allow installation from Kilalao, if needed, and to confirm the update. A normal compatible update preserves local games and progress. No storage permission or analytics is added.
+The updater reads this repository's latest stable GitHub Release and its `update.json` asset. It offers a newer compatible Android version, downloads only after the user agrees, verifies the exact byte count and SHA-256, and checks application ID, version code/name, and all signing certificates against the installed app. HTTP and unknown download/redirect hosts are rejected. Downloads are bounded to 64 MiB. Android then asks the user to allow installation from Kilalao, if needed, and to confirm the update. Verified pending updates are stored privately, survive an app-process restart during the permission step, and are checked again before installation. A normal compatible update preserves local games and progress. No storage permission or analytics is added.
 
 ## Release activation
 
 The old 1.0.x, 1.1.0 and 1.1.1 APKs used different temporary signing certificates. None of their private signing keys is available in the resumed workspace. Android cannot update these installations with a newly signed release. The updater rejects such mismatches and never instructs the user to uninstall. Keep any installation whose saved progress you need. The first permanent release will require a separate migration decision for old installations; this version does not implement progress export/import.
 
-Before publishing the first stable APK, retain a permanent Java keystore **outside this public repository** and configure these repository Actions secrets:
+Before publishing the first stable APK, retain a permanent Java keystore **outside this repository** and configure these repository Actions secrets:
 
 | Secret | Value |
 | --- | --- |

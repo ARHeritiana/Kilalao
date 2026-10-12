@@ -4,7 +4,7 @@ An offline Android app with **24 mathematical and logic game families**, touch c
 
 ## Install
 
-Download **[Kilalao-1.1.1-debug.apk](APK/Kilalao-1.1.1-debug.apk)** from this repository, open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later** and an up-to-date Android System WebView. The APK is a signed development build, suitable for trying the app; it is not a Google Play release.
+Download **[Kilalao-1.2.0.apk](https://github.com/ARHeritiana/Kilalao/releases/download/v1.2.0/Kilalao-1.2.0.apk)** from the private [1.2.0 release](https://github.com/ARHeritiana/Kilalao/releases/tag/v1.2.0), open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later**. This APK uses the permanent Kilalao release signing certificate; it is not a Google Play release.
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app uses internet access only for optional GitHub update checks/downloads and asks Android for permission to install a verified update. It contains no analytics or advertisements and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
 
@@ -12,11 +12,11 @@ Play and the learning guides work without an internet connection. Source article
 
 The phone interface has a compact game header, full-width boards, separate Play/Learn controls, and a fixed Undo/Hint/New game dock. Home navigation uses a bottom bar. Moves animate with moving disks/tiles, fading captures, drawn connections, and cell feedback; reduced-motion settings are respected. Both cube sizes have an orbitable CSS 3D display, labeled faces, and animated layer turns. No game families or variants were added.
 
-**Installation over an older build:** this tested 1.1.1 APK uses the GitHub Actions runner's debug signing certificate, which differs from the bundled 1.1.0 and 1.0.x certificates. Android cannot update those installations in place. Uninstalling an older installation deletes its saved games and progress. See [the UI review and build validation](UI_REVIEW.md) for the APK checksum, certificate fingerprint, and test evidence.
+**Installation over an older build:** the permanent 1.2.0 signing certificate differs from the temporary 1.0.x/1.1.x development certificates. Android cannot update those installations in place. Uninstalling an older installation deletes its saved games and progress; keep it if those saves matter. Future compatible releases use the same permanent key and preserve progress. See [release validation](RELEASE_VALIDATION.md).
 
 ## Updates in 1.2.0
 
-The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; release builds use a permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The bundled 1.1.1 APK predates this updater; the 1.2.0 source is built by Actions.
+The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; future release builds require the permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The signed 1.2.0 release includes this updater. Pending downloads survive the Android installation-permission restart and are verified again before installation.
 
 ## Games
 

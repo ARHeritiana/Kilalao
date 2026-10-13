@@ -30,6 +30,8 @@ The palette is defined once, as CSS custom properties in `app/src/main/assets/st
 | Player 2 | `--p2` / `--p2-text` | `#f68c36` / `#af4803` | Fill (with ink marks) / text |
 | Error | `--danger` / `--danger-soft` | `#c93029` / `#fee7e4` | Conflicts, delete |
 
+The river-crossing scene also uses thirteen `--art-*` illustration colours (skin, fur, wool, leaves, boat wood). They are for drawings only, never for controls or text.
+
 Use the **soft** tints for backgrounds behind ink text, the **fill** colours for marks, chips and pieces outlined in ink, and the **deep** shades for white text on a coloured badge.
 
 ## Validation

@@ -20,6 +20,9 @@
  --logic:#6f1a76;--logic-soft:#fbe4fc;--logic-deep:#753479;
  /* Players: blue vs orange (Okabe-Ito pairing), also split by lightness so the pair survives greyscale. */
  --p1:#1570d1;--p2:#f68c36;--p2-text:#af4803;
+ /* Illustration colours for the river scene (skin, fur, wool, leaves, wood). Not for interface elements. */
+ --art-skin:#e3ad84;--art-fur:#7b8894;--art-fur-light:#d9dee2;--art-horn:#a48b6a;--art-wool:#f4eee2;--art-wool-line:#cbbfa8;--art-ear:#e8dfcf;
+ --art-leaf:#9dba68;--art-leaf-light:#bfd68d;--art-leaf-vein:#e8f0d4;--art-wood:#8a5a3b;--art-wood-dark:#6b4329;--art-wood-light:#a7724f;
  /* Semantic roles. */
  --highlight:var(--numbers);--highlight-soft:var(--numbers-soft);--danger:#c93029;--danger-soft:#fee7e4;--success:var(--patterns);
  --display:'Fredoka',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
@@ -212,8 +215,8 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
 .update-button{display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:#fff}
 .update-button:hover{background:var(--primary-hover)}
 
-#toast{cursor:pointer;position:fixed;bottom:calc(var(--dock-h) + 20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border:2px solid var(--ink);border-radius:18px;padding:14px 18px;box-shadow:0 4px 0 var(--primary);width:max-content;max-width:calc(100vw - 32px);z-index:40;display:none;font:500 15px/1.45 var(--display);animation:toast-in .25s cubic-bezier(.2,1.4,.4,1)}
-@keyframes toast-in{from{opacity:0;transform:translate(-50%,10px) scale(.95)}to{opacity:1;transform:translateX(-50%)}}
+#toast{cursor:pointer;position:fixed;bottom:calc(var(--dock-h) + 20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border:2px solid var(--ink);border-radius:18px;padding:14px 18px;box-shadow:0 4px 0 var(--primary);width:max-content;max-width:calc(100vw - 32px);z-index:40;font:500 15px/1.45 var(--display);opacity:0;visibility:hidden;transform:translate(-50%,14px);transition:opacity .2s,transform .28s cubic-bezier(.2,1.4,.4,1),visibility .2s}
+#toast.show{opacity:1;visibility:visible;transform:translateX(-50%)}
 
 /* ---------- Board pieces ---------- */
 .grid{display:grid;gap:6px}
@@ -256,8 +259,6 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
 .cube-face{display:grid;gap:3px;background:var(--ink);padding:4px;border-radius:7px;position:relative}
 .cube-sticker{aspect-ratio:1;border-radius:3px}
 .cube-face small{position:absolute;top:-16px;left:0;font-size:10px}
-.river-bank{padding:20px;border-radius:20px;background:var(--patterns-soft);border:2px solid var(--ink);display:flex;justify-content:center;gap:12px;min-height:90px;align-items:center;flex-wrap:wrap}
-.river-water{height:75px;background:var(--spatial-soft) repeating-linear-gradient(90deg,transparent 0 18px,#008eb322 18px 24px);border:2px solid var(--ink);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:10px 0;overflow:hidden}
 .expression{padding:13px;border:2px solid var(--ink);border-radius:16px;width:100%;font:600 22px var(--display);background:var(--surface)}
 .four-numbers{display:flex;gap:12px;justify-content:center;margin:25px 0}
 .four-numbers span{flex:1;min-width:0;max-width:80px;background:var(--highlight);border:2px solid var(--ink);box-shadow:var(--pop);font:700 38px var(--display);text-align:center;padding:12px 4px;border-radius:18px}
@@ -285,14 +286,6 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
 .cube-shadow{position:absolute;bottom:16px;left:20%;width:60%;height:20px;background:#211d461f;filter:blur(10px);border-radius:50%}
 .cube-caption{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0 12px;color:var(--muted);font:500 13px var(--display)}
 .cube-caption button{min-height:44px;font-size:13px;padding:8px 12px}
-.cube-face-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cube-face-picker button{padding:10px 6px;font-size:14px;min-height:48px}
-.cube-face-picker b{font-size:18px;margin-right:3px}
-.cube-face-picker [aria-pressed=true]{background:var(--primary);color:#fff}
-.cube-turn-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;scroll-margin-bottom:calc(var(--dock-h) + 24px + env(safe-area-inset-bottom))}
-.cube-turn-controls button{font-size:24px;background:var(--highlight);min-height:64px}
-.cube-turn-controls small{display:block;font-size:12px;margin-top:3px}
-.cube-notation{font-size:12px;text-align:center;color:var(--muted);margin:12px 0}
 .cube-accessible{font-size:13px;color:var(--muted);margin:10px 0}
 .cube-accessible summary{padding:12px 0;min-height:44px;cursor:pointer}
 .cube-accessible p{line-height:1.6}
@@ -338,7 +331,7 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
  .stat b{font-size:28px}
  .stat span{font-size:12px}
  .set-cards{gap:7px}
- .cube-scene{height:230px}
+ .cube-scene{height:300px}
  .action-dock{padding-left:8px;padding-right:8px;gap:5px}
 }
 @media(max-width:360px){
@@ -364,10 +357,6 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
  .main-nav a{min-height:48px;flex-direction:row;gap:6px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-.stepper{display:inline-flex;align-items:center;gap:6px}
-.stepper button{width:48px;padding:0;font-size:24px;line-height:1;background:var(--highlight-soft)}
-.controls .stepper input{width:64px;-moz-appearance:textfield;appearance:textfield}
-.stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .disk{color:var(--ink)}
 /* Hex rhombus: wide board, sandy cells, stones that pop in. */
 .hex-board{--hex:5;max-width:calc(var(--hex) * 110px)}
@@ -408,3 +397,113 @@ body.fullscreen .game-topbar{padding-top:8px;min-height:60px}
  .board .game-svg{width:auto;max-width:100%;max-height:calc(100vh - var(--dock-h) - 28px);max-height:calc(100dvh - var(--dock-h) - 28px);margin:auto}
  .board.grid:not(.sudoku){max-width:min(100%,calc(100vh - var(--dock-h) - 28px));max-width:min(100%,calc(100dvh - var(--dock-h) - 28px))}
 }
+
+/* ---------- Direct controls, river scene, cube rail and demos (merged 1.3.0) ---------- */
+.cube-rail,.number-pad,.controls{scroll-margin-bottom:calc(var(--dock-h) + 24px + env(safe-area-inset-bottom))}
+.cell{transition:background-color .18s,box-shadow .18s,transform .12s}
+.heap{cursor:pointer;flex-wrap:wrap;transition:background-color .2s,box-shadow .2s}
+.set-card{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
+.set-card.sel{transform:translateY(-3px)}
+.peg-tower{transition:background-color .2s}
+.disk{transition:transform .3s cubic-bezier(.3,.7,.3,1),box-shadow .3s}
+.peg-tower.sel .disk:first-child{transform:translateY(var(--lift,-18px));box-shadow:0 12px 12px -8px #211d4666;z-index:3}
+.screen-enter{animation:screen-in .22s ease-out}
+@keyframes screen-in{from{opacity:0}to{opacity:1}}
+
+/* River crossing scene */
+.river-scene{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.5fr) minmax(0,.75fr);min-height:270px;margin-top:4px;border:2px solid var(--ink);border-radius:22px;overflow:hidden;box-shadow:var(--pop)}
+.bank{display:grid;gap:4px;padding:10px 4px;background:linear-gradient(var(--patterns-soft),#bfeedd)}
+.bank-left{box-shadow:inset -5px 0 0 var(--line-strong)}
+.bank-right{box-shadow:inset 5px 0 0 var(--line-strong)}
+.river-channel{position:relative;overflow:hidden;background:linear-gradient(90deg,#b5e3f7,var(--spatial-soft) 50%,#b5e3f7)}
+.river-channel:before{content:"";position:absolute;left:0;right:0;top:-48px;bottom:0;background-image:radial-gradient(ellipse 13px 3px at 30% 25%,#ffffff8c 70%,transparent 75%),radial-gradient(ellipse 10px 3px at 75% 70%,#ffffff70 70%,transparent 75%);background-size:56px 48px;animation:river-flow 5s linear infinite}
+@keyframes river-flow{to{transform:translateY(48px)}}
+.boat{position:absolute;top:calc(50% - 40px);width:min(104px,calc(100% - 12px));height:80px;display:flex;flex-direction:column;justify-content:flex-end;z-index:1;filter:drop-shadow(0 4px 3px #211d4630)}
+.boat.docked-left{left:6px}
+.boat.docked-right{left:calc(100% - min(104px,calc(100% - 12px)) - 6px)}
+.river-token{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:0;line-height:1.1;border:0;box-shadow:none;background:transparent;padding:2px 0;min-height:0;border-radius:12px;cursor:pointer;color:inherit}
+.river-token:active:not(:disabled){transform:scale(.94);box-shadow:none}
+.river-token svg{width:40px;height:40px;flex-shrink:0}
+.river-token small{font:600 11px var(--display);color:var(--ink)}
+.river-token b{position:absolute;right:calc(50% - 22px);bottom:2px;font-size:10px;background:var(--surface);border-radius:8px;padding:0 4px;box-shadow:0 0 0 1px var(--ink)}
+.river-token.far{opacity:.92}
+.bank .river-token:not(.far):hover{background:#ffffff70}
+.river-crowd .river-token svg{width:34px;height:34px}
+.river-captions{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.5fr) minmax(0,.75fr);text-align:center;font:500 12px var(--display);color:var(--muted);margin-top:8px}
+.river-captions span:nth-child(2){padding:0 4px}
+.river .controls button{min-width:64px}
+.boat-seats{display:flex;justify-content:center;align-items:flex-end;gap:2px;height:40px;position:relative;z-index:2}
+.boat-seats .river-token{flex:0 0 auto;padding:0}
+.boat-seats .river-token svg{width:34px;height:34px}
+.boat-seats .river-token small{display:none}
+.boat-seats .river-token b{bottom:-2px}
+.boat-hull{position:relative;display:block;width:100%;height:36px;min-height:0;padding:0;border:0;box-shadow:none;background:transparent;border-radius:10px}
+.boat-hull:hover,.boat-hull:active{background:transparent;box-shadow:none;transform:none}
+.boat-hull svg{display:block;width:100%;height:100%}
+.boat-hull span{position:absolute;left:0;right:0;top:9px;text-align:center;font:700 11px var(--display);color:#fbe9d2;letter-spacing:.3px;pointer-events:none}
+.boat-hull:focus-visible{outline-offset:1px}
+
+/* Rubik's cube: swipe stage with a face rail */
+.cube-stage{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:8px;align-items:stretch}
+.cube-scene{height:330px}
+.cube-rail{display:grid;grid-template-rows:repeat(7,minmax(0,1fr));gap:6px}
+.cube-rail button{min-height:40px;padding:0;border-radius:12px;font-size:16px;box-shadow:0 2px 0 var(--ink)}
+.cube-rail button b{font-weight:700}
+.cube-rail .cube-dir{background:var(--ink);color:#fff;font-size:22px}
+.cube-rail .cube-dir[aria-pressed=true]{background:var(--primary)}
+.sticker{transition:box-shadow .15s}
+.sticker.face-selected{box-shadow:inset 0 0 0 3px #fff,0 0 0 2px var(--ink)}
+@media(max-width:540px){.cube-scene{height:300px}}
+@media(max-width:360px){.cube-stage{grid-template-columns:minmax(0,1fr) 48px}.cube-scene{height:280px}}
+@media(max-height:560px){.cube-scene{height:max(200px,calc(100vh - 170px))}.cube-stage{grid-template-columns:minmax(0,1fr) 100px}.cube-rail{grid-template-columns:1fr 1fr;grid-template-rows:none;align-content:center}.cube-rail button{min-height:44px}.cube-rail .cube-dir{grid-column:1/-1}}
+
+/* Tangram snap marker */
+#snap-mark{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.4);transition:opacity .12s,transform .18s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+#snap-mark.on{opacity:1;transform:scale(1)}
+
+/* Nim: tap counters */
+.heap .stones{gap:6px}
+.stone{width:28px;height:28px;min-height:0;padding:0;border:2px solid var(--ink);box-shadow:none;border-radius:50%;background:var(--spatial);transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .18s,box-shadow .18s}
+.stone:hover{background:var(--spatial-deep)}
+.stone:active{transform:none;box-shadow:none}
+.stone.taking{background:var(--highlight);transform:translateY(-5px);box-shadow:0 5px 6px -3px #211d4666}
+.stone.cut{margin-left:14px}
+.nim-help{text-align:center;margin:0 0 8px}
+
+/* Mastermind palette, 24 keypad, move targets, Sudoku peers */
+.color-dot.active{box-shadow:0 0 0 3px var(--surface),0 0 0 6px var(--ink)}
+.palette{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;max-width:360px;margin:12px auto 4px}
+.swatch{aspect-ratio:1;min-height:44px;padding:0;border-radius:50%;border:2px solid var(--ink);box-shadow:var(--pop)}
+.keypad24{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.keypad24 button{min-height:52px;font-size:20px;padding:6px}
+.keypad24 .num{background:var(--highlight);font-size:24px}
+.keypad24 .num:disabled{opacity:.35}
+.cell.target{box-shadow:inset 0 0 0 3px var(--primary);animation:target-pulse 1.2s ease-in-out infinite}
+.target-ring{animation:target-pulse 1.2s ease-in-out infinite}
+@keyframes target-pulse{50%{opacity:.45}}
+.sudoku .cell.peer{background:var(--highlight-soft)}
+.sudoku .cell.fixed.peer{background:#ece4f6}
+.sudoku .cell.same{color:var(--primary);font-weight:800}
+
+/* Demos: caption bar sits above the dock, in thumb reach, never in the status-bar strip */
+.note-row{max-width:500px;margin:18px auto;display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.note-row .game-note{margin:0}
+.demo-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--primary-soft)}
+.demo-bar{position:fixed;bottom:calc(var(--dock-h) + 10px + env(safe-area-inset-bottom));left:8px;right:8px;max-width:600px;margin:0 auto;z-index:45;background:var(--ink);color:#fff;border:2px solid var(--ink);border-radius:20px;padding:10px 12px 12px;box-shadow:0 4px 0 var(--primary);animation:demo-in .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes demo-in{from{opacity:0;transform:translateY(12px)}}
+.demo-head{display:flex;align-items:center;gap:8px}
+.demo-badge{font:700 12px var(--display);letter-spacing:1px;text-transform:uppercase;color:var(--highlight)}
+.demo-dots{display:flex;gap:5px;flex:1}
+.demo-dots i{width:8px;height:8px;border-radius:50%;background:#ffffff40;transition:background-color .3s}
+.demo-dots i.on{background:var(--highlight)}
+.demo-bar button{min-height:44px;padding:6px 14px;border:2px solid #ffffff55;box-shadow:none;border-radius:14px;background:#ffffff1f;color:#fff;font-size:14px}
+.demo-bar button:hover{background:#ffffff33}
+.demo-bar p{margin:8px 2px 0;font:500 16px/1.45 var(--display);min-height:46px}
+.demo-running #boardarea,.demo-running .position-bar,.demo-running .screen-bar,.demo-running .note-row{pointer-events:none}
+.demo-running .action-dock button{opacity:.4;pointer-events:none}
+.demo-finger{position:fixed;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:#ffffffa6;border:3px solid var(--ink);box-shadow:0 6px 16px #211d4640;z-index:44;pointer-events:none;opacity:0;transition:opacity .25s}
+.demo-finger.shown{opacity:1}
+.demo-finger.down{background:#fdc436d9;width:40px;height:40px;left:-20px;top:-20px}
+.demo-ripple{position:fixed;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;border:3px solid var(--highlight);z-index:43;pointer-events:none;animation:demo-ripple .55s ease-out forwards}
+@keyframes demo-ripple{from{opacity:.9;scale:.6}to{opacity:0;scale:1.8}}
+@media(prefers-reduced-motion:reduce){.river-channel:before{animation:none}}

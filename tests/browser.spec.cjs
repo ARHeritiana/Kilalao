@@ -102,3 +102,13 @@ test('Commands stay in the thumb zone: nothing interactive in the top strip, doc
   expect(r.x,id+' left gesture margin').toBeGreaterThanOrEqual(24);expect(360-(r.x+r.width),id+' right gesture margin').toBeGreaterThanOrEqual(24);
  }
 });
+test('Hex is a rhombus with a horizontal long diagonal, and each side border belongs to one player',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto('/#game/hex');
+ const center=async i=>{const b=await page.locator(`[data-cell="${i}"]`).boundingBox();return{x:b.x+b.width/2,y:b.y+b.height/2};};
+ const [left,top,bottom,right]=[await center(0),await center(4),await center(20),await center(24)];
+ expect(Math.abs(left.y-right.y)).toBeLessThan(1);expect(Math.abs(top.x-bottom.x)).toBeLessThan(1);
+ expect(right.x-left.x).toBeGreaterThan((bottom.y-top.y)*1.5);
+ expect(await page.locator('.hex-board polyline').count()).toBe(4);
+ await page.locator('[data-cell="12"]').click();await expect(page.locator('[data-motion="stone-12"]')).toHaveCount(1);
+ await expect(page.locator('.game-status')).toContainText('Player 2');
+});

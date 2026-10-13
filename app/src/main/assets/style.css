@@ -369,3 +369,9 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
 .controls .stepper input{width:64px;-moz-appearance:textfield;appearance:textfield}
 .stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .disk{color:var(--ink)}
+/* Hex rhombus: wide board, sandy cells, stones that pop in. */
+.hex-board{max-width:560px}
+.hex-cell{outline:none;fill:var(--sunken);stroke:var(--line-strong);stroke-width:1.5;cursor:pointer;transition:fill .15s}
+.hex-cell:hover{fill:var(--highlight-soft)}
+.hex-cell:focus-visible{outline:none;fill:var(--highlight-soft);stroke:var(--primary);stroke-width:3}
+.hex-stone{transform-box:fill-box;transform-origin:center}

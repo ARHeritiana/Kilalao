@@ -6,8 +6,12 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.DisplayCutout;
+import android.view.WindowInsets;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.JavascriptInterface;
@@ -18,6 +22,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,6 +33,7 @@ import java.util.Map;
 /** Offline games with a separate native updater; remote WebView content stays blocked. */
 public final class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
+    private static final int PAPER = Color.rgb(255,248,236);
     private WebView web;
     private AppUpdater updater;
     // The bundled game UI requires JS; remote content and file access are blocked.
@@ -36,10 +42,26 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         updater = new AppUpdater(this);
         web = new WebView(this);
-        web.setBackgroundColor(Color.rgb(246,245,238));
-        web.setOnApplyWindowInsetsListener((view,insets) -> {
-            view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(), insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
-            return insets.consumeSystemWindowInsets();
+        web.setBackgroundColor(PAPER);
+        // Android 15 draws apps edge to edge, and WebView ignores its own padding.
+        // A plain container keeps every control clear of the status bar, cutout, navigation/gesture bar and keyboard.
+        FrameLayout root=new FrameLayout(this);
+        root.setBackgroundColor(PAPER);
+        root.addView(web,new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT));
+        root.setOnApplyWindowInsetsListener((view,insets) -> {
+            int left,top,right,bottom;
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R) {
+                Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout()|WindowInsets.Type.ime());
+                left=bars.left;top=bars.top;right=bars.right;bottom=bars.bottom;
+            } else {
+                left=insets.getSystemWindowInsetLeft();top=insets.getSystemWindowInsetTop();right=insets.getSystemWindowInsetRight();bottom=insets.getSystemWindowInsetBottom();
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.P&&insets.getDisplayCutout()!=null) {
+                    DisplayCutout cutout=insets.getDisplayCutout();
+                    left=Math.max(left,cutout.getSafeInsetLeft());top=Math.max(top,cutout.getSafeInsetTop());right=Math.max(right,cutout.getSafeInsetRight());bottom=Math.max(bottom,cutout.getSafeInsetBottom());
+                }
+            }
+            view.setPadding(left,top,right,bottom);
+            return insets;
         });
         WebSettings settings=web.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -68,6 +90,7 @@ public final class MainActivity extends Activity {
                     String mime=URLConnection.guessContentTypeFromName(name);
                     if(name.endsWith(".js")) mime="application/javascript";
                     if(name.endsWith(".css")) mime="text/css";
+                    if(name.endsWith(".woff2")) mime="font/woff2";
                     if(mime==null) mime="application/octet-stream";
                     Map<String,String> headers=new HashMap<>();
                     headers.put("Cache-Control","no-cache");
@@ -94,8 +117,10 @@ public final class MainActivity extends Activity {
                 new AlertDialog.Builder(MainActivity.this).setMessage(message).setView(input).setPositiveButton("Save",(d,w)->result.confirm(input.getText().toString())).setNegativeButton("Cancel",(d,w)->result.cancel()).setOnCancelListener(d->result.cancel()).show();return true;
             }
         });
-        setContentView(web);
-        web.requestApplyInsets();
+        // From Android 11 the app always lays out edge to edge, so the insets above are the only spacing.
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R) getWindow().setDecorFitsSystemWindows(false);
+        setContentView(root);
+        root.requestApplyInsets();
         web.loadUrl("https://"+HOST+"/assets/index.html");
         updater.check(false);
     }

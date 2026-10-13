@@ -8,6 +8,10 @@ Download **[Kilalao-1.2.1.apk](https://github.com/ARHeritiana/Kilalao/releases/d
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app uses internet access only for optional GitHub update checks/downloads and asks Android for permission to install a verified update. It contains no analytics or advertisements and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
 
+## Playful interface (unreleased)
+
+Bright category colours, chunky press-down buttons, rounded type (the bundled [Fredoka](app/src/main/assets/fonts/OFL.txt) font, SIL Open Font License) and a small celebration when a puzzle is solved. All game commands sit in a bottom thumb dock: **Games · Undo · Hint · New · Learn**; in the learning guide the same dock shows **Games · Rules · Strategy · Research · Play**. Nim's amount has −/+ steppers, so no keyboard is needed. **Check for updates** is now on the Progress screen. The Android app keeps every control clear of the status bar, display cutout, navigation/gesture bar and on-screen keyboard. This also applies on Android 15, which forces edge-to-edge display. Drag-to-play boards (Tangram, Sprouts, Hackenbush, the cube) keep a 24px margin away from the back-gesture edges.
+
 ## Interface in 1.1.1
 
 The phone interface has a compact game header, full-width boards, separate Play/Learn controls, and a fixed Undo/Hint/New game dock. Home navigation uses a bottom bar. Moves animate with moving disks/tiles, fading captures, drawn connections, and cell feedback; reduced-motion settings are respected. Both cube sizes have an orbitable CSS 3D display, labeled faces, and animated layer turns. No game families or variants were added.

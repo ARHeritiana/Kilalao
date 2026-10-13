@@ -250,7 +250,7 @@ const LEARNING = {
     "id": "hex",
     "rules": [
       "Players alternate placing a stone of their color on any empty hexagonal cell.",
-      "One player aims to connect the top and bottom sides; the other aims to connect the left and right sides.",
+      "Each player owns two opposite sides of the rhombus, marked in that player's color, and aims to connect them.",
       "A winning path is a chain of adjacent stones of one color touching both of that player’s goal sides.",
       "Stones remain in place. Standard Hex has no draws."
     ],

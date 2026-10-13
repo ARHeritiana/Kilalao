@@ -5,9 +5,16 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.DisplayCutout;
+import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.JavascriptInterface;
@@ -18,6 +25,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,18 +36,36 @@ import java.util.Map;
 /** Offline games with a separate native updater; remote WebView content stays blocked. */
 public final class MainActivity extends Activity {
     private static final String HOST = "appassets.androidplatform.net";
+    private static final int PAPER = Color.rgb(255,248,236);
     private WebView web;
     private AppUpdater updater;
+    private boolean fullscreen;
     // The bundled game UI requires JS; remote content and file access are blocked.
     @SuppressLint("SetJavaScriptEnabled")
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         updater = new AppUpdater(this);
         web = new WebView(this);
-        web.setBackgroundColor(Color.rgb(246,245,238));
-        web.setOnApplyWindowInsetsListener((view,insets) -> {
-            view.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(), insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
-            return insets.consumeSystemWindowInsets();
+        web.setBackgroundColor(PAPER);
+        // Android 15 draws apps edge to edge, and WebView ignores its own padding.
+        // A plain container keeps every control clear of the status bar, cutout, navigation/gesture bar and keyboard.
+        FrameLayout root=new FrameLayout(this);
+        root.setBackgroundColor(PAPER);
+        root.addView(web,new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT));
+        root.setOnApplyWindowInsetsListener((view,insets) -> {
+            int left,top,right,bottom;
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R) {
+                Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout()|WindowInsets.Type.ime());
+                left=bars.left;top=bars.top;right=bars.right;bottom=bars.bottom;
+            } else {
+                left=insets.getSystemWindowInsetLeft();top=insets.getSystemWindowInsetTop();right=insets.getSystemWindowInsetRight();bottom=insets.getSystemWindowInsetBottom();
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.P&&insets.getDisplayCutout()!=null) {
+                    DisplayCutout cutout=insets.getDisplayCutout();
+                    left=Math.max(left,cutout.getSafeInsetLeft());top=Math.max(top,cutout.getSafeInsetTop());right=Math.max(right,cutout.getSafeInsetRight());bottom=Math.max(bottom,cutout.getSafeInsetBottom());
+                }
+            }
+            view.setPadding(left,top,right,bottom);
+            return insets;
         });
         WebSettings settings=web.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -52,11 +78,18 @@ public final class MainActivity extends Activity {
         settings.setAllowUniversalAccessFromFileURLs(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);
+        // Demo narration chains bundled clips after the tap that starts it; only local assets load.
+        settings.setMediaPlaybackRequiresUserGesture(false);
         web.addJavascriptInterface(new Object() {
             @JavascriptInterface public void checkForUpdates() { runOnUiThread(() -> updater.showMenu()); }
             @JavascriptInterface public String version() { return BuildConfig.VERSION_NAME; }
             @JavascriptInterface public void manageUpdateAccess() { runOnUiThread(() -> updater.manageAccess()); }
         }, "KilalaoUpdates");
+        // Game screens ask for immersive full screen and a rotation; the web code decides when (only inside a game).
+        web.addJavascriptInterface(new Object() {
+            @JavascriptInterface public void setFullscreen(boolean on) { runOnUiThread(() -> applyFullscreen(on)); }
+            @JavascriptInterface public void setOrientation(String mode) { runOnUiThread(() -> applyOrientation(mode)); }
+        }, "KilalaoDisplay");
         web.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri=request.getUrl();
@@ -68,6 +101,8 @@ public final class MainActivity extends Activity {
                     String mime=URLConnection.guessContentTypeFromName(name);
                     if(name.endsWith(".js")) mime="application/javascript";
                     if(name.endsWith(".css")) mime="text/css";
+                    if(name.endsWith(".woff2")) mime="font/woff2";
+                    if(name.endsWith(".ogg")) mime="audio/ogg";
                     if(mime==null) mime="application/octet-stream";
                     Map<String,String> headers=new HashMap<>();
                     headers.put("Cache-Control","no-cache");
@@ -94,11 +129,34 @@ public final class MainActivity extends Activity {
                 new AlertDialog.Builder(MainActivity.this).setMessage(message).setView(input).setPositiveButton("Save",(d,w)->result.confirm(input.getText().toString())).setNegativeButton("Cancel",(d,w)->result.cancel()).setOnCancelListener(d->result.cancel()).show();return true;
             }
         });
-        setContentView(web);
-        web.requestApplyInsets();
+        // From Android 11 the app always lays out edge to edge, so the insets above are the only spacing.
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R) getWindow().setDecorFitsSystemWindows(false);
+        setContentView(root);
+        root.requestApplyInsets();
         web.loadUrl("https://"+HOST+"/assets/index.html");
         updater.check(false);
     }
+    /** Hides the status and navigation bars; a swipe from an edge shows them briefly, and Back keeps working. */
+    @SuppressWarnings("deprecation")
+    private void applyFullscreen(boolean on) {
+        fullscreen=on;
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R) {
+            WindowInsetsController controller=getWindow().getInsetsController();
+            if(controller==null) return;
+            if(on) {
+                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                controller.hide(WindowInsets.Type.systemBars());
+            } else controller.show(WindowInsets.Type.systemBars());
+        } else {
+            getWindow().getDecorView().setSystemUiVisibility(on?View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION:View.SYSTEM_UI_FLAG_VISIBLE);
+        }
+    }
+    /** "landscape" and "portrait" follow the sensor within that orientation even when auto-rotate is off; "auto" restores the system setting. */
+    private void applyOrientation(String mode) {
+        int wanted="landscape".equals(mode)?ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:"portrait".equals(mode)?ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT:ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if(getRequestedOrientation()!=wanted) setRequestedOrientation(wanted);
+    }
+    @Override public void onWindowFocusChanged(boolean hasFocus) { super.onWindowFocusChanged(hasFocus);if(hasFocus&&fullscreen)applyFullscreen(true); }
     private static WebResourceResponse empty(int status,String reason) {
         return new WebResourceResponse("text/plain","UTF-8",status,reason,null,new ByteArrayInputStream(new byte[0]));
     }
@@ -109,5 +167,5 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onPause() { web.evaluateJavascript("saveGame()",null);web.onPause();super.onPause(); }
     @Override protected void onResume() { super.onResume();if(web!=null)web.onResume();if(updater!=null)updater.resume(); }
-    @Override protected void onDestroy() { if(updater!=null)updater.close();if(web!=null){web.removeJavascriptInterface("KilalaoUpdates");web.destroy();web=null;}super.onDestroy(); }
+    @Override protected void onDestroy() { if(updater!=null)updater.close();if(web!=null){web.removeJavascriptInterface("KilalaoUpdates");web.removeJavascriptInterface("KilalaoDisplay");web.destroy();web=null;}super.onDestroy(); }
 }

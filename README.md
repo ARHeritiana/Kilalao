@@ -1,105 +1,119 @@
 # Kilalao — mathematics at play
 
-An offline Android app with **24 mathematical and logic game families**, touch controls, saved positions, and a learning library explaining rules, strategies, mathematical ideas, and published research.
+An offline Android app with **24 mathematical and logic game families**, touch controls, saved positions, narrated demos, and a learning library on rules, strategy, mathematical ideas and published research.
 
 ## Install
 
-Download **[Kilalao-1.2.1.apk](https://github.com/ARHeritiana/Kilalao/releases/download/v1.2.1/Kilalao-1.2.1.apk)** from the private [1.2.1 release](https://github.com/ARHeritiana/Kilalao/releases/tag/v1.2.1), open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later**. This APK uses the permanent Kilalao release signing certificate; it is not a Google Play release.
+Phones already running a signed Kilalao release (1.2.0 or later) get new versions through **Progress → Check for updates**, and saved games and progress are kept. To install from scratch, download **[Kilalao-1.3.0.apk](https://github.com/ARHeritiana/Kilalao/releases/download/v1.3.0/Kilalao-1.3.0.apk)** from the private [1.3.0 release](https://github.com/ARHeritiana/Kilalao/releases/tag/v1.3.0). Open it on the device and allow installation from that source if Android asks. Requires **Android 8.0 or later**. The APK is signed with the permanent Kilalao release key; it is not a Google Play release.
 
-Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app uses internet access only for optional GitHub update checks/downloads and asks Android for permission to install a verified update. It contains no analytics or advertisements and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
+Development builds from 1.0.x and 1.1.x used temporary keys. Android cannot update them in place, and uninstalling one deletes its saved games.
 
-## Interface in 1.1.1
+Play, guides and demos work offline. Source articles open in your usual browser. The app goes online only for the optional GitHub update check and download, and asks Android before installing an update. It has no analytics, ads or accounts, and keeps progress on the device. Two-player games are pass-and-play.
 
-The phone interface has a compact game header, full-width boards, separate Play/Learn controls, and a fixed Undo/Hint/New game dock. Home navigation uses a bottom bar. Moves animate with moving disks/tiles, fading captures, drawn connections, and cell feedback; reduced-motion settings are respected. Both cube sizes have an orbitable CSS 3D display, labeled faces, and animated layer turns. No game families or variants were added.
+## Using the app
 
-**Installation over an older build:** the permanent 1.2.0 signing certificate differs from the temporary 1.0.x/1.1.x development certificates. Android cannot update those installations in place. Uninstalling an older installation deletes its saved games and progress; keep it if those saves matter. Future compatible releases use the same permanent key and preserve progress. See [release validation](RELEASE_VALIDATION.md).
-
-## Updates in 1.2.0
-
-The app now has an **Updates** button and a daily startup check. It downloads newer stable releases after your agreement, verifies their checksum and signing certificate, and opens Android’s install confirmation. Games still work offline. Private updates use a device-local fine-grained GitHub token with read-only access; future release builds require the permanent signing key in encrypted Actions secrets; see [UPDATES.md](UPDATES.md) for setup and the older development APK compatibility limits. The signed 1.2.1 release includes this updater and supports GitHub’s longer JWT installation tokens. Pending downloads survive the Android installation-permission restart and are verified again before installation.
+- **Bottom dock.** All game commands sit within thumb reach: **Games · Undo · Hint · New · Learn**. In a guide, the dock shows **Games · Rules · Strategy · Research · Play**. Nothing interactive sits in the status-bar strip, and drag boards keep clear of the Android back-gesture edges.
+- **Direct controls.** You play by touching the pieces themselves:
+  - River crossing: tap passengers to seat them, then tap the boat.
+  - Rubik's Cube: swipe across the cube to turn rows and middle slices.
+  - Nim: tap a counter to take it and those to its right.
+  - Mastermind and the 24 Game: colour palette and number keypad.
+  - Sliding puzzles: swipe blocks.
+  - Peg Solitaire and Clobber highlight legal destinations; Sudoku shades the chosen square's row, column and box.
+- **Demos.** **Watch a demo** (below each game's instructions, or on its Rules page) plays real moves with a finger cursor, captions and an offline recorded voice. Demos never change your saved game.
+- **Sizes.** Games where size is part of the game have a size picker (table below). Changing size starts a new game; New game keeps the chosen size.
+- **Screen.** Each game has **Auto / Wide / Tall** rotation and **Full screen**:
+  - Wide and Tall work even when the phone's auto-rotate is off.
+  - Full screen hides the system bars; swipe from an edge to see them briefly.
+  - These choices apply only inside games and are remembered.
+- **Look.** Playful theme with the bundled Fredoka font and a colour palette tested for contrast and colour blindness ([DESIGN.md](DESIGN.md)). Reduced-motion settings are respected.
 
 ## Games
 
-| Family | Playable edition / modes |
-| --- | --- |
-| Tower of Hanoi | Four disks; classic, four pegs, cyclic, adjacent |
-| Nim and heap games | Normal, misère, Wythoff, Fibonacci, subtraction {1,3,4}, Kayles, Grundy |
-| Chomp | 4×6 chocolate grid |
-| Domineering | 6×6, vertical versus horizontal |
-| Clobber | 5×5 capture game |
-| Hackenbush | Blue-red grounded graph |
-| Sprouts | Freehand curves, degree and intersection validation |
-| Dots and Boxes | 4×4 dots, extra-turn scoring |
-| Hex | 5×5 hexagonal board |
-| Sim | Six vertices and monochromatic triangle avoidance |
-| Peg Solitaire | Triangular and English boards |
-| Lights Out | Solvable 5×5 boards, algebraic hints |
-| Sliding puzzles | 8 Puzzle, 15 Puzzle, original traffic puzzle, classic Klotski |
-| Toads and Frogs | Three pieces per side, forward-only swapping puzzle |
-| Sudoku | Standard 9×9, digit-permuted puzzles |
-| Nonograms | Three 5×5 picture challenges |
-| Kakuro | Small 3×3 arithmetic practice board; any valid filling accepted |
-| Mastermind | Four positions, six colors, repetition; random or privately entered secret |
-| SET | Four features, three values, five-set practice rounds |
-| N-Queens | Five or eight queens |
-| Tangram | Seven draggable, rotatable, flippable pieces; classic square challenge |
-| Rubik’s Cube | Interactive 3D 3×3 and 2×2 cubes, animated face turns |
-| River crossing | Farmer–wolf–goat–cabbage; missionaries and cannibals |
-| The 24 Game | Solvable four-number challenges and a safe arithmetic parser |
+| Family | Modes | Sizes (default in bold) |
+| --- | --- | --- |
+| Tower of Hanoi | Classic, four pegs, cyclic, adjacent | 3, **4**, 5, 6, 7 disks |
+| Nim and heap games | Normal, misère, Wythoff, Fibonacci, subtraction {1,3,4}, Kayles, Grundy | — |
+| Chomp | — | 3×4, **4×6**, 5×7, 6×8 |
+| Domineering | Vertical versus horizontal | 4×4, **6×6**, 8×8 |
+| Clobber | — | 4×4, **5×5**, 6×6, 7×7 |
+| Hackenbush | Blue-red grounded graph | — |
+| Sprouts | Freehand curves with degree and crossing checks | 2, **3**, 4, 5 dots |
+| Dots and Boxes | Extra turn for each closed box | 3×3, **4×4**, 5×5, 6×6 dots |
+| Hex | Classic rhombus; each player owns two opposite sides | **5×5**, 7×7, 9×9, 11×11 |
+| Sim | Six vertices; avoid a triangle in your colour | — |
+| Peg Solitaire | Triangular, English | — |
+| Lights Out | Always solvable, algebraic hints | 3×3, 4×4, **5×5**, 6×6, 7×7 |
+| Sliding puzzles | 8 Puzzle, 15 Puzzle, traffic, Klotski | — |
+| Toads and Frogs | Forward-only swapping puzzle | 1, 2, **3**, 4, 5 per side |
+| Sudoku | Standard 9×9, digit-permuted puzzles | — |
+| Nonograms | Three 5×5 pictures | — |
+| Kakuro | 3×3 practice board; any valid filling accepted | — |
+| Mastermind | Four positions, six colours, repetition; random or private secret | — |
+| SET | Four features, three values, five-set rounds | — |
+| N-Queens | — | 4 to 10 queens (**8**) |
+| Tangram | Seven draggable, rotatable, flippable pieces that snap together | — |
+| Rubik's Cube | 3D 3×3 and 2×2 with swipe turns | — |
+| River crossing | Farmer–wolf–goat–cabbage; missionaries and cannibals | — |
+| The 24 Game | Solvable four-number challenges, safe arithmetic parser | — |
 
-Each family has **Rules**, **Strategy**, and **Research** tabs. Research summaries link to academic resources, original papers, and official rules. They distinguish existence proofs from constructive strategies, and generalized complexity results from individual small boards. Sprouts uses an agreed concession to end play when a player cannot draw a legal curve; automatic recognition of every planar position is not implemented.
+Each family has **Rules**, **Strategy** and **Research** sections.
+- Research summaries link to academic resources, original papers and official rules.
+- They separate existence proofs from constructive strategies, and general complexity results from the small boards played here.
+- Sprouts ends by agreed concession when a player cannot draw a legal curve; the app does not detect every blocked position.
 
 ## Build from source
 
-1. Install Android Studio (or Android SDK command-line tools), **JDK 17**, Android platform **35**, and build tools **35.0.0**.
-2. Clone this repository and open it in Android Studio. Let Gradle sync.
-3. From the repository root, run:
+1. Install **JDK 17**, the Android SDK with platform **35** and build tools **35.0.0** (Android Studio includes them), and **Node 22**.
+2. Run `./gradlew assembleDebug` from the repository root (`gradlew.bat` on Windows). Set `ANDROID_HOME`, or add `sdk.dir` to an untracked `local.properties` file.
+3. The APK is written to `app/build/outputs/apk/debug/app-debug.apk`. It is signed with a debug key, so it cannot update a phone that has a signed release installed.
 
-```sh
-./gradlew assembleDebug
-```
+Signed releases are built only by the **Publish Android update** workflow on `main`:
+- It uses the permanent key stored in encrypted Actions secrets; keys are never committed.
+- It checks on an emulator that the new APK installs over the previous version and keeps saved progress.
+- It publishes a GitHub Release containing the APK, `update.json` and `SHA256SUMS`.
 
-The output is `app/build/outputs/apk/debug/app-debug.apk`. On Windows, use `gradlew.bat assembleDebug`. Outside Android Studio, set `ANDROID_HOME` to your SDK directory, or add its path as `sdk.dir` in an untracked `local.properties` file. The wrapper downloads pinned Gradle 8.11.1; AGP is pinned to 8.9.2. An internet connection is needed only to fetch build tools and dependencies.
-
-For a production release, provide your own protected signing configuration and run `assembleRelease`. Signing keys must never be committed to this repository.
+See [UPDATES.md](UPDATES.md) for the updater and its private-repository access.
 
 ## Test
 
-Node 22 or later is recommended. The game engines have no JavaScript runtime dependencies; DOM interaction tests use jsdom; browser layout checks use Playwright. Both are development-only dependencies:
-
 ```sh
 npm ci
-npm test
-npm run check
-./gradlew lintDebug
+npm test               # game rules and DOM interaction tests (jsdom)
+npm run check          # JavaScript syntax
+npx playwright install chromium && npm run test:browser   # layouts, sizes, demos, animations
+./gradlew testDebugUnitTest lintDebug
 ```
 
-The rule tests cover all 24 families, including shortest Hanoi solutions, legal traffic/frog/river solutions, both cube sizes and their inverse turns, Sudoku completion, Lights Out solvability, repeated-color feedback, tangram overlap detection, and arithmetic parser validation.
-
-For browser checks, run `npx playwright install chromium` followed by `npm run test:browser`. These check all 24 screens at five viewport widths, move animations, reduced motion, and the 3D cube; screenshots are workflow artifacts for review.
-
-The GitHub Actions workflow runs these checks, builds the Android APK, and uploads the APK and lint report as workflow artifacts on pushes and pull requests.
+- The rule tests cover all 24 families, every board size, solvability, shortest Hanoi and Toads-and-Frogs solutions, cube inverses and the arithmetic parser.
+- The browser checks cover every game, mode and size at widths of 320 to 800px, landscape layouts, full screen, and all 24 demos run through the real controls.
+- CI runs all of these on every pull request and push to `main`, builds the APK, and uploads it with the lint report and screenshots as workflow artifacts.
 
 ## Architecture
 
-- `app/src/main/java/mg/kilalao/app/MainActivity.java`: native Android Activity, local HTTPS asset interception, external browser links, Android back handling and dialogs.
-- `app/src/main/assets/engines.js`: deterministic, DOM-independent game rules and solving helpers.
-- `app/src/main/assets/ui.js`: responsive touch interface, undo, hints, local saves and learning navigation.
-- `app/src/main/assets/cube3d.js`: local 3D cubies, sticker rendering, orbit controls, and layer animations.
-- `app/src/main/assets/motion.js`: move animations and reduced-motion handling.
-- `app/src/main/assets/catalog.js`: exactly 24 families; variants belong inside each family.
-- `app/src/main/assets/learning.js`: original educational summaries and source links.
-- `tests/engines.test.js`: game correctness tests.
-- `tests/ui.test.js`: DOM interaction checks for navigation, saved games, controls, and drawing gestures. These are not a substitute for testing on an Android device.
+| Path | Role |
+| --- | --- |
+| `app/src/main/java/mg/kilalao/app/MainActivity.java` | Android activity. Serves the bundled assets over a local HTTPS origin, keeps content clear of system bars, and provides the Back, full-screen and rotation bridges. |
+| `app/src/main/java/mg/kilalao/app/AppUpdater.java` and related classes | Verified GitHub update check, download and install. |
+| `assets/engines.js` | Deterministic game rules, sizes and solvers (no DOM). |
+| `assets/ui.js` | Screens, touch controls, undo, hints, saves, learning navigation. |
+| `assets/display.js` | Rotation and full-screen controls. |
+| `assets/demo.js`, `assets/demo-text.js`, `assets/voice/` | Narrated demos and their recorded voice clips. |
+| `assets/cube3d.js`, `assets/motion.js` | 3D cube and move animations. |
+| `assets/catalog.js`, `assets/learning.js` | The 24 families and their learning text. |
+| `assets/style.css`, `assets/fonts/` | Theme and palette tokens; bundled Fredoka font. |
+| `scripts/palette.py` | Generates and validates the palette (see DESIGN.md). |
+| `scripts/make-voice.py` | Regenerates the demo narration offline. |
+| `scripts/prepare-release.py`, `scripts/check-update-install.py` | Release checks run by CI. |
+| `tests/` | Engine, DOM and browser tests. |
 
-No OpenAI API key, server, OpenAI API usage, or paid service is required. Games work offline; optional private updates require a read-only GitHub access token. The Android app bundles all its assets. Its local WebView cannot read arbitrary files or load remote content.
+The WebView cannot read device files or load remote content; only the native updater uses the network.
 
 ## Attribution
 
-Source code retains this repository’s MIT license. Educational text and illustrations were written for Kilalao. Named games, commercial product names, and their trademarks belong to their respective owners; this is an independent educational app, not an official product of those publishers. Linked research belongs to its authors and is summarized, not reproduced.
-
-### Mobile usability follow-up · 1.1.1
-
-Category buttons wrap so every category is visible. On phones, the mode selector spans the available width and displays longer names clearly. Learning sections have persistent URLs; reloading retains the selected section and Android Back or Escape returns to Play before the catalogue. Keyboard focus survives board updates. Hanoi disks lift above the pegs during moves. The existing animated, orbitable 3D cubes are retained, with both sizes and all twelve turn directions covered by tests.
-
-The expanded browser checks cover every available mode at five widths, short phones, landscape controls, and navigation across reloads and Back. Android builds and browser screenshots are available in the workflow artifacts.
+- **Code:** MIT license.
+- **Font:** Fredoka, under the SIL Open Font License ([licence](app/src/main/assets/fonts/OFL.txt)).
+- **Demo voice:** generated offline with the Kokoro model (Apache-2.0) through sherpa-onnx.
+- **Text and illustrations:** educational text and illustrations were written for Kilalao.
+- **Trademarks:** game names and product names belong to their owners. This is an independent educational app.
+- **Research:** linked research belongs to its authors and is summarised, not reproduced.

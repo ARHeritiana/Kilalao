@@ -4,11 +4,11 @@ An offline Android app with **24 mathematical and logic game families**, touch c
 
 ## Install
 
-Download **[Kilalao-1.2.1.apk](https://github.com/ARHeritiana/Kilalao/releases/download/v1.2.1/Kilalao-1.2.1.apk)** from the private [1.2.1 release](https://github.com/ARHeritiana/Kilalao/releases/tag/v1.2.1), open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later**. This APK uses the permanent Kilalao release signing certificate; it is not a Google Play release.
+Installed 1.2.x apps are offered 1.3.0 by **Check for updates**; progress is kept because both use the permanent signing key. Or download **[Kilalao-1.3.0.apk](https://github.com/ARHeritiana/Kilalao/releases/download/v1.3.0/Kilalao-1.3.0.apk)** from the private [1.3.0 release](https://github.com/ARHeritiana/Kilalao/releases/tag/v1.3.0), open it on your Android device, and allow installation from that download source if Android asks. Requires **Android 8.0 or later**. This APK uses the permanent Kilalao release signing certificate; it is not a Google Play release.
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app uses internet access only for optional GitHub update checks/downloads and asks Android for permission to install a verified update. It contains no analytics or advertisements and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
 
-## Sizes, rotation and full screen (unreleased)
+## Sizes, rotation and full screen in 1.3.0
 
 Ten games have a size picker below the mode selector. Changing the size starts a new game, after you confirm if a game is in progress, and New game keeps the chosen size. Defaults are the original editions.
 
@@ -27,7 +27,7 @@ Ten games have a size picker below the mode selector. Changing the size starts a
 
 Every game screen has a screen bar. **Auto** follows the phone's rotation setting. **Wide** and **Tall** turn the app sideways or keep it upright, even when auto-rotate is off. **Full screen** hides the status and navigation bars; swiping from an edge shows them briefly, and Back keeps working. These choices apply only inside games and are remembered on the device. Sideways, drawn boards shrink to fit above the dock, so a whole game needs no scrolling. In a browser, the same buttons use the Fullscreen and Screen Orientation APIs, where the browser supports them.
 
-## Playful interface (unreleased)
+## Playful interface in 1.3.0
 
 Category colours from a tested palette (WCAG contrast and colour-blind separation; see [DESIGN.md](DESIGN.md)), chunky press-down buttons, rounded type (the bundled [Fredoka](app/src/main/assets/fonts/OFL.txt) font, SIL Open Font License) and a small celebration when a puzzle is solved. All game commands sit in a bottom thumb dock: **Games · Undo · Hint · New · Learn**; in the learning guide the same dock shows **Games · Rules · Strategy · Research · Play**. Nim's amount has −/+ steppers, so no keyboard is needed. **Check for updates** is now on the Progress screen. The Android app keeps every control clear of the status bar, display cutout, navigation/gesture bar and on-screen keyboard. This also applies on Android 15, which forces edge-to-edge display. Drag-to-play boards (Tangram, Sprouts, Hackenbush, the cube) keep a 24px margin away from the back-gesture edges.
 

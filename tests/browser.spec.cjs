@@ -17,6 +17,13 @@ for(const width of [320,360,390,480,800])test(`All games fit ${width}px; navigat
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),g.id+' / '+mode+' overflow').toBe(true);
    if(width<=480){const r=await page.locator('#mode').boundingBox();expect(r.width,g.id+' mode selector').toBeGreaterThan(200);}
   }
+  for(const chip of await page.locator('[data-size]').all()){
+   const size=await chip.getAttribute('data-size');await page.locator(`[data-size="${size}"]`).click();
+   await expect(page.locator(`[data-size="${size}"]`)).toHaveAttribute('aria-pressed','true');
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),g.id+' size '+size+' overflow').toBe(true);
+   const r=await page.locator('#boardarea').boundingBox();expect(r.x).toBeGreaterThanOrEqual(0);expect(r.x+r.width).toBeLessThanOrEqual(width+1);
+  }
+  for(const b of await page.locator('.screen-bar button').all()){await expect(b).toBeVisible();expect((await b.boundingBox()).height).toBeGreaterThanOrEqual(44);}
   const dock=page.locator('.action-dock');await expect(dock).toBeVisible();
   for(const button of await dock.locator('a,button').all()){await expect(button).toBeInViewport({ratio:1});const r=await button.boundingBox();expect(r.height).toBeGreaterThanOrEqual(48);expect(r.width).toBeGreaterThanOrEqual(44);expect(await button.locator('span').evaluate(el=>el.scrollWidth<=el.clientWidth+1),g.id+' dock label fits').toBe(true);}
   expect(await page.locator('.back').evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThanOrEqual(44);
@@ -111,4 +118,13 @@ test('Hex is a rhombus with a horizontal long diagonal, and each side border bel
  expect(await page.locator('.hex-board polyline').count()).toBe(4);
  await page.locator('[data-cell="12"]').click();await expect(page.locator('[data-motion="stone-12"]')).toHaveCount(1);
  await expect(page.locator('.game-status')).toContainText('Player 2');
+});
+
+test('Large boards keep tappable cells sideways, and the browser screen bar enters and leaves full screen',async({page})=>{
+ await page.setViewportSize({width:844,height:390});await page.goto('/#game/hex');await page.locator('[data-size="11"]').click();
+ const board=page.locator('.hex-board svg');await board.scrollIntoViewIfNeeded();const box=await board.boundingBox(),dock=await page.locator('.action-dock').boundingBox();expect(box.y).toBeGreaterThanOrEqual(0);expect(box.y+box.height).toBeLessThanOrEqual(dock.y+1);const cell=await page.locator('[data-cell="60"]').boundingBox();expect(cell.width).toBeGreaterThanOrEqual(30);
+ await page.goto('/#game/queens');await page.locator('[data-size="10"]').click();expect((await page.locator('[data-cell="0"]').boundingBox()).width).toBeGreaterThanOrEqual(28);
+ await page.locator('[data-screen="fullscreen"]').click();
+ await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBe(true);await expect(page.locator('body')).toHaveClass(/fullscreen/);
+ await page.locator('[data-screen="fullscreen"]').click();await expect.poll(()=>page.evaluate(()=>!!document.fullscreenElement)).toBe(false);
 });

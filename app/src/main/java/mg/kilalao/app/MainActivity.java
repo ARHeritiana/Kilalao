@@ -5,13 +5,16 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.DisplayCutout;
+import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.JavascriptInterface;
@@ -36,6 +39,7 @@ public final class MainActivity extends Activity {
     private static final int PAPER = Color.rgb(255,248,236);
     private WebView web;
     private AppUpdater updater;
+    private boolean fullscreen;
     // The bundled game UI requires JS; remote content and file access are blocked.
     @SuppressLint("SetJavaScriptEnabled")
     @Override public void onCreate(Bundle state) {
@@ -79,6 +83,11 @@ public final class MainActivity extends Activity {
             @JavascriptInterface public String version() { return BuildConfig.VERSION_NAME; }
             @JavascriptInterface public void manageUpdateAccess() { runOnUiThread(() -> updater.manageAccess()); }
         }, "KilalaoUpdates");
+        // Game screens ask for immersive full screen and a rotation; the web code decides when (only inside a game).
+        web.addJavascriptInterface(new Object() {
+            @JavascriptInterface public void setFullscreen(boolean on) { runOnUiThread(() -> applyFullscreen(on)); }
+            @JavascriptInterface public void setOrientation(String mode) { runOnUiThread(() -> applyOrientation(mode)); }
+        }, "KilalaoDisplay");
         web.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri=request.getUrl();
@@ -124,6 +133,27 @@ public final class MainActivity extends Activity {
         web.loadUrl("https://"+HOST+"/assets/index.html");
         updater.check(false);
     }
+    /** Hides the status and navigation bars; a swipe from an edge shows them briefly, and Back keeps working. */
+    @SuppressWarnings("deprecation")
+    private void applyFullscreen(boolean on) {
+        fullscreen=on;
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R) {
+            WindowInsetsController controller=getWindow().getInsetsController();
+            if(controller==null) return;
+            if(on) {
+                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                controller.hide(WindowInsets.Type.systemBars());
+            } else controller.show(WindowInsets.Type.systemBars());
+        } else {
+            getWindow().getDecorView().setSystemUiVisibility(on?View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION:View.SYSTEM_UI_FLAG_VISIBLE);
+        }
+    }
+    /** "landscape" and "portrait" follow the sensor within that orientation even when auto-rotate is off; "auto" restores the system setting. */
+    private void applyOrientation(String mode) {
+        int wanted="landscape".equals(mode)?ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:"portrait".equals(mode)?ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT:ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if(getRequestedOrientation()!=wanted) setRequestedOrientation(wanted);
+    }
+    @Override public void onWindowFocusChanged(boolean hasFocus) { super.onWindowFocusChanged(hasFocus);if(hasFocus&&fullscreen)applyFullscreen(true); }
     private static WebResourceResponse empty(int status,String reason) {
         return new WebResourceResponse("text/plain","UTF-8",status,reason,null,new ByteArrayInputStream(new byte[0]));
     }
@@ -134,5 +164,5 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onPause() { web.evaluateJavascript("saveGame()",null);web.onPause();super.onPause(); }
     @Override protected void onResume() { super.onResume();if(web!=null)web.onResume();if(updater!=null)updater.resume(); }
-    @Override protected void onDestroy() { if(updater!=null)updater.close();if(web!=null){web.removeJavascriptInterface("KilalaoUpdates");web.destroy();web=null;}super.onDestroy(); }
+    @Override protected void onDestroy() { if(updater!=null)updater.close();if(web!=null){web.removeJavascriptInterface("KilalaoUpdates");web.removeJavascriptInterface("KilalaoDisplay");web.destroy();web=null;}super.onDestroy(); }
 }

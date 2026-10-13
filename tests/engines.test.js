@@ -62,3 +62,19 @@ test('Sprouts permits a genuine loop with dense samples near its endpoint',()=>{
  const path=[[100,100],[105,105],[120,100],[130,80],[110,60],[90,50],[70,70],[80,80],[95,95],[100,100]].map(([x,y])=>({x,y}));
  const s=apply(init('sprouts'),{from:0,to:0,path});assert.equal(s.nodes[0].d,2);assert.equal(s.nodes[3].d,2);
 });
+test('Every sized game builds its board at each size, and the defaults keep the original editions',()=>{
+ const dims={hanoi:s=>s.stacks[0].length,chomp:s=>s.rows+'×'+s.cols,domineering:s=>s.rows,clobber:s=>s.rows,sprouts:s=>s.nodes.length,boxes:s=>s.n,hex:s=>s.rows,lights:s=>s.rows,frogs:s=>(s.board.length-1)/2,queens:s=>s.rows};
+ for(const [id,z] of Object.entries(E.SIZES)){
+  assert.equal(dims[id](E.init(id,undefined,5)),z.default,id+' default');
+  for(const v of z.options){const s=E.init(id,undefined,5,v);assert.equal(dims[id](s),v,id+' '+v);assert.equal(E.inferSize(s),v);}
+  assert.equal(E.init(id,undefined,5,'nonsense').size,z.default,id+' rejects unknown sizes');
+ }
+ assert.deepEqual(E.init('hanoi',undefined,1,4).stacks[0],[4,3,2,1]);
+});
+test('Sized puzzles stay solvable: Lights Out at every board, Toads and Frogs in (k+1)²−1 moves',()=>{
+ for(const z of E.SIZES.lights.options)for(const seed of [1,2,3]){const s=E.init('lights',undefined,seed,z),a=E.lightsSolution(s);assert.ok(a);let t=s;for(const i of a)t=E.move(t,{index:i}).state;assert.equal(t.won,true,'lights '+z);}
+ for(const k of E.SIZES.frogs.options){const p=E.shortestFrog(E.init('frogs',undefined,1,k));assert.equal(p.length,(k+1)**2-1);}
+});
+test('Saved games from before sizes report the size they were played at',()=>{
+ assert.equal(E.inferSize({id:'queens',rows:5,cols:5}),5);assert.equal(E.inferSize({id:'chomp',rows:4,cols:6}),'4×6');assert.equal(E.inferSize({id:'frogs',board:[1,1,1,0,2,2,2]}),3);assert.equal(E.inferSize({id:'sudoku'}),null);
+});

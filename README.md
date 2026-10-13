@@ -8,6 +8,25 @@ Download **[Kilalao-1.2.1.apk](https://github.com/ARHeritiana/Kilalao/releases/d
 
 Play and the learning guides work without an internet connection. Source articles open in your usual browser. The app uses internet access only for optional GitHub update checks/downloads and asks Android for permission to install a verified update. It contains no analytics or advertisements and stores progress only on the device. Two-player games use pass-and-play; no account or online opponent is needed.
 
+## Sizes, rotation and full screen (unreleased)
+
+Ten games have a size picker below the mode selector. Changing the size starts a new game, after you confirm if a game is in progress, and New game keeps the chosen size. Defaults are the original editions.
+
+| Game | Sizes (default in bold) |
+| --- | --- |
+| Tower of Hanoi | 3, **4**, 5, 6, 7 disks |
+| Chomp | 3×4, **4×6**, 5×7, 6×8 |
+| Domineering | 4×4, **6×6**, 8×8 |
+| Clobber | 4×4, **5×5**, 6×6, 7×7 |
+| Sprouts | 2, **3**, 4, 5 dots |
+| Dots and Boxes | 3×3, **4×4**, 5×5, 6×6 dots |
+| Hex | **5×5**, 7×7, 9×9, 11×11 |
+| Lights Out | 3×3, 4×4, **5×5**, 6×6, 7×7 |
+| Toads and Frogs | 1, 2, **3**, 4, 5 per side |
+| N-Queens | 4 to 10 queens (**8**); replaces the former 5/8 modes |
+
+Every game screen has a screen bar. **Auto** follows the phone's rotation setting. **Wide** and **Tall** turn the app sideways or keep it upright, even when auto-rotate is off. **Full screen** hides the status and navigation bars; swiping from an edge shows them briefly, and Back keeps working. These choices apply only inside games and are remembered on the device. Sideways, drawn boards shrink to fit above the dock, so a whole game needs no scrolling. In a browser, the same buttons use the Fullscreen and Screen Orientation APIs, where the browser supports them.
+
 ## Playful interface (unreleased)
 
 Category colours from a tested palette (WCAG contrast and colour-blind separation; see [DESIGN.md](DESIGN.md)), chunky press-down buttons, rounded type (the bundled [Fredoka](app/src/main/assets/fonts/OFL.txt) font, SIL Open Font License) and a small celebration when a puzzle is solved. All game commands sit in a bottom thumb dock: **Games · Undo · Hint · New · Learn**; in the learning guide the same dock shows **Games · Rules · Strategy · Research · Play**. Nim's amount has −/+ steppers, so no keyboard is needed. **Check for updates** is now on the Progress screen. The Android app keeps every control clear of the status bar, display cutout, navigation/gesture bar and on-screen keyboard. This also applies on Android 15, which forces edge-to-edge display. Drag-to-play boards (Tangram, Sprouts, Hackenbush, the cube) keep a 24px margin away from the back-gesture edges.

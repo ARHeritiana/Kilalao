@@ -228,10 +228,10 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
 .cell.poison{background:var(--ink);color:var(--highlight);border-color:var(--ink)}
 .cell.gone{visibility:hidden}
 
-.hanoi{display:flex;align-items:flex-end;gap:8px;height:230px;margin-bottom:50px}
+.hanoi{--disks:4;display:flex;align-items:flex-end;gap:8px;height:calc(var(--disks) * 28px + 118px);margin-bottom:50px}
 .peg-tower{flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;padding:0 4px;background:transparent;border:0;border-bottom:10px solid var(--ink);border-radius:6px;box-shadow:none}
 .peg-tower:active{transform:none;box-shadow:none}
-.peg-tower:before{content:"";height:170px;width:10px;background:var(--line-strong);border:2px solid var(--ink);position:absolute;bottom:0;border-radius:6px 6px 0 0}
+.peg-tower:before{content:"";height:calc(var(--disks) * 28px + 58px);width:10px;background:var(--line-strong);border:2px solid var(--ink);position:absolute;bottom:0;border-radius:6px 6px 0 0}
 .peg-tower.sel{background:var(--highlight-soft);border-radius:16px 16px 6px 6px}
 .disk{height:24px;border-radius:12px;border:2px solid var(--ink);position:relative;margin:2px 0;text-align:center;font:700 12px/20px var(--display);color:#fff}
 .heap{display:flex;align-items:center;gap:12px;width:100%;min-height:66px;padding:14px;background:var(--surface);border-radius:18px;margin:10px 0}
@@ -370,8 +370,41 @@ body[data-game=tangram] #boardarea,body[data-game=sprouts] #boardarea,body[data-
 .stepper input::-webkit-inner-spin-button,.stepper input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .disk{color:var(--ink)}
 /* Hex rhombus: wide board, sandy cells, stones that pop in. */
-.hex-board{max-width:560px}
+.hex-board{--hex:5;max-width:calc(var(--hex) * 110px)}
 .hex-cell{outline:none;fill:var(--sunken);stroke:var(--line-strong);stroke-width:1.5;cursor:pointer;transition:fill .15s}
 .hex-cell:hover{fill:var(--highlight-soft)}
 .hex-cell:focus-visible{outline:none;fill:var(--highlight-soft);stroke:var(--primary);stroke-width:3}
 .hex-stone{transform-box:fill-box;transform-origin:center}
+
+/* Larger boards: cell symbols scale with the column count (container units, 24px fallback). */
+.board.grid{container-type:inline-size}
+.board.grid .cell{font-size:min(24px,calc(100cqw / var(--cols,5) * .5))}
+.board.grid:not(.sudoku){max-width:min(480px,calc(var(--cols,5) * 72px))}
+body[data-game=queens] .board.grid,body[data-game=domineering] .board.grid,body[data-game=clobber] .board.grid,body[data-game=lights] .board.grid,body[data-game=chomp] .board.grid{max-width:min(560px,calc(var(--cols,5) * 72px))}
+.board.grid:has(> .cell:nth-child(64)) {gap:4px}
+
+/* Size picker: chips under the mode, one tap to choose. */
+.size-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:600 13px var(--display);color:var(--muted)}
+.size-options{display:flex;flex-wrap:wrap;gap:6px}
+.size-options button{min-height:44px;min-width:48px;padding:6px 12px;border-radius:999px;font-size:14px;box-shadow:0 2px 0 var(--ink)}
+.size-options button.active{background:var(--highlight)}
+
+/* Screen bar: rotation and full screen, below the status card. */
+.screen-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;max-width:500px;margin:12px auto 0}
+.screen-options{display:inline-flex;gap:4px;padding:4px;border:2px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:var(--pop)}
+.screen-bar button{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;font-size:13px}
+.screen-options button{border:0;box-shadow:none;border-radius:13px;background:transparent}
+.screen-options button.active{background:var(--highlight);box-shadow:inset 0 0 0 2px var(--ink)}
+.screen-bar .icon{width:20px;height:20px}
+.screen-full.active{background:var(--primary);color:#fff}
+body.fullscreen .game-topbar{padding-top:8px;min-height:60px}
+@media(max-width:540px){
+ .size-picker{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px}
+ .screen-bar{margin-top:10px}
+}
+@media(max-width:360px){.screen-bar button span{font-size:12px}.screen-bar button{padding:6px 8px}}
+/* Sideways phones: drawn boards fit between the top of the screen and the dock, so a whole game needs no scrolling. */
+@media(orientation:landscape) and (max-height:600px){
+ .board .game-svg{width:auto;max-width:100%;max-height:calc(100vh - var(--dock-h) - 28px);max-height:calc(100dvh - var(--dock-h) - 28px);margin:auto}
+ .board.grid:not(.sudoku){max-width:min(100%,calc(100vh - var(--dock-h) - 28px));max-width:min(100%,calc(100dvh - var(--dock-h) - 28px))}
+}
